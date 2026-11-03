@@ -11,6 +11,7 @@ const sequencia = (valores: number[]): Aleatorio => {
 }
 
 const config: Configuracao = {
+  modo: 'classico',
   jogadores: ['Ana', 'Bia', 'Caio', 'Duda'],
   temaIds: [comidasEBebidas.id],
   rodadas: 2,

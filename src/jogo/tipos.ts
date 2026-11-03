@@ -1,7 +1,9 @@
+export type ModoJogo = 'classico' | 'dupla'
 export type ModoVotacao = 'secreta' | 'grupo'
 export type DicaImpostor = 'tema' | 'nenhuma'
 
 export type Configuracao = {
+  modo: ModoJogo
   jogadores: readonly string[]
   temaIds: readonly string[]
   rodadas: number
@@ -40,6 +42,7 @@ export type Partida = {
 }
 
 export const MIN_JOGADORES = 3
+export const JOGADORES_DUPLA = 2
 export const MAX_JOGADORES = 20
 export const MIN_RODADAS = 1
 export const MAX_RODADAS = 5

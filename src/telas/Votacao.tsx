@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Avatar } from '../componentes/Avatar'
 import { Botao } from '../componentes/Botao'
+import { PassarCelular } from '../componentes/PassarCelular'
 import { Tela } from '../componentes/Tela'
 import type { Partida } from '../jogo/tipos'
 
@@ -24,36 +25,25 @@ export const Votacao = ({ partida, aoVotar, aoAcusarEmGrupo }: VotacaoProps) =>
   )
 
 const VotoSecreto = ({ partida, aoVotar }: { partida: Partida; aoVotar: (acusado: number) => void }) => {
-  const [confirmado, setConfirmado] = useState(false)
   const votante = partida.votanteAtual
   const nome = partida.config.jogadores[votante] ?? ''
-  const total = partida.config.jogadores.length
-
-  if (!confirmado) {
-    return (
-      <Tela
-        subtitulo={`Voto ${votante + 1} de ${total}`}
-        rodape={<Botao onClick={() => setConfirmado(true)}>Sou eu, {nome}</Botao>}
-      >
-        <div className="flex flex-1 flex-col items-center justify-center gap-4 text-center">
-          <Avatar nome={nome} indice={votante} tamanho="grande" />
-          <p className="text-xl text-texto-suave">Passe o celular para</p>
-          <p className="text-5xl font-black break-words">{nome}</p>
-          <p className="max-w-64 text-texto-suave">O voto é secreto.</p>
-        </div>
-      </Tela>
-    )
-  }
 
   return (
-    <EscolhaDoSuspeito
-      titulo={`Seu voto, ${nome}`}
-      subtitulo="Em quem você vota como impostor?"
-      jogadores={partida.config.jogadores}
-      excluido={votante}
-      aoConfirmar={aoVotar}
-      rotuloConfirmar="Confirmar voto"
-    />
+    <PassarCelular
+      nome={nome}
+      indice={votante}
+      progresso={`Voto ${votante + 1} de ${partida.config.jogadores.length}`}
+      aviso="O voto é secreto."
+    >
+      <EscolhaDoSuspeito
+        titulo={`Seu voto, ${nome}`}
+        subtitulo="Em quem você vota como impostor?"
+        jogadores={partida.config.jogadores}
+        excluido={votante}
+        aoConfirmar={aoVotar}
+        rotuloConfirmar="Confirmar voto"
+      />
+    </PassarCelular>
   )
 }
 

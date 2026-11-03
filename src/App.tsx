@@ -11,21 +11,28 @@ import {
   somarAoPlacar,
   type Placar,
 } from './jogo/armazenamento'
+import { avancarDupla, calcularPontosDupla, criarPartidaDupla, type AcaoDupla, type PartidaDupla } from './jogo/dupla'
 import { avancarPartida, calcularPontos, criarPartida, type Acao } from './jogo/partida'
 import type { Configuracao, Partida } from './jogo/tipos'
 import { TEMAS, buscarTema } from './temas'
 import { Dicas } from './telas/Dicas'
 import { Discussao } from './telas/Discussao'
 import { Inicio } from './telas/Inicio'
+import { TelaDaDupla } from './telas/PartidaDupla'
 import { NovoJogo } from './telas/NovoJogo'
 import { Resultado } from './telas/Resultado'
 import { Revelacao } from './telas/Revelacao'
 import { UltimaChance } from './telas/UltimaChance'
 import { Votacao } from './telas/Votacao'
 
-type Navegacao = { tela: 'inicio' } | { tela: 'novoJogo' } | { tela: 'partida'; partida: Partida }
+type Navegacao =
+  | { tela: 'inicio' }
+  | { tela: 'novoJogo' }
+  | { tela: 'partida'; partida: Partida }
+  | { tela: 'dupla'; partida: PartidaDupla; config: Configuracao }
 
 const CONFIG_PADRAO: Configuracao = {
+  modo: 'classico',
   jogadores: [],
   temaIds: TEMAS.map((tema) => tema.id),
   rodadas: 2,
@@ -38,25 +45,47 @@ export const App = () => {
   const [ultimaConfig, setUltimaConfig] = useState<Configuracao | null>(lerConfiguracao)
   const [placar, setPlacar] = useState<Placar>(lerPlacar)
 
-  useTelaAcesa(navegacao.tela === 'partida')
+  useTelaAcesa(navegacao.tela === 'partida' || navegacao.tela === 'dupla')
 
   const comecar = (config: Configuracao) => {
     const temas = config.temaIds.flatMap((id) => buscarTema(id) ?? [])
-    const { partida, historico } = criarPartida(config, temas, lerHistorico(), aleatorioSeguro)
-    gravarHistorico(historico)
     gravarConfiguracao(config)
     setUltimaConfig(config)
+
+    const [primeiro, segundo] = config.jogadores
+    if (config.modo === 'dupla' && primeiro !== undefined && segundo !== undefined) {
+      const dupla = { jogadores: [primeiro, segundo] as const, rodadas: config.rodadas }
+      const { partida, historico } = criarPartidaDupla(dupla, temas, lerHistorico(), aleatorioSeguro)
+      gravarHistorico(historico)
+      setNavegacao({ tela: 'dupla', partida, config })
+      return
+    }
+
+    const { partida, historico } = criarPartida(config, temas, lerHistorico(), aleatorioSeguro)
+    gravarHistorico(historico)
     setNavegacao({ tela: 'partida', partida })
+  }
+
+  const somarPontos = (jogadores: readonly string[], pontos: readonly number[]) => {
+    const novoPlacar = somarAoPlacar(placar, jogadores, pontos)
+    gravarPlacar(novoPlacar)
+    setPlacar(novoPlacar)
   }
 
   const avancar = (partida: Partida, acao: Acao) => {
     const proxima = avancarPartida(partida, acao)
     if (proxima.etapa === 'resultado' && partida.etapa !== 'resultado') {
-      const novoPlacar = somarAoPlacar(placar, proxima.config.jogadores, calcularPontos(proxima))
-      gravarPlacar(novoPlacar)
-      setPlacar(novoPlacar)
+      somarPontos(proxima.config.jogadores, calcularPontos(proxima))
     }
     setNavegacao({ tela: 'partida', partida: proxima })
+  }
+
+  const avancarNaDupla = (partida: PartidaDupla, config: Configuracao, acao: AcaoDupla) => {
+    const proxima = avancarDupla(partida, acao)
+    if (proxima.etapa === 'resultado' && partida.etapa !== 'resultado') {
+      somarPontos(proxima.jogadores, calcularPontosDupla(proxima))
+    }
+    setNavegacao({ tela: 'dupla', partida: proxima, config })
   }
 
   const zerarPlacar = () => {
@@ -86,6 +115,16 @@ export const App = () => {
           placar={placar}
           aoAvancar={(acao) => avancar(navegacao.partida, acao)}
           aoJogarDeNovo={() => comecar(navegacao.partida.config)}
+          aoSair={irParaInicio}
+        />
+      )
+    case 'dupla':
+      return (
+        <TelaDaDupla
+          partida={navegacao.partida}
+          placar={placar}
+          aoAvancar={(acao) => avancarNaDupla(navegacao.partida, navegacao.config, acao)}
+          aoJogarDeNovo={() => comecar(navegacao.config)}
           aoSair={irParaInicio}
         />
       )

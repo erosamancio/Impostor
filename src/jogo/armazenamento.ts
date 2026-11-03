@@ -31,7 +31,10 @@ const ehPlacar = (valor: unknown): valor is Placar =>
   !Array.isArray(valor) &&
   Object.values(valor).every((pontos) => typeof pontos === 'number')
 
-const ehConfiguracao = (valor: unknown): valor is Configuracao => {
+/** Configuração salva; `modo` é opcional porque versões antigas não o gravavam. */
+type ConfiguracaoSalva = Omit<Configuracao, 'modo'> & { modo?: unknown }
+
+const ehConfiguracao = (valor: unknown): valor is ConfiguracaoSalva => {
   if (typeof valor !== 'object' || valor === null) return false
   const config = valor as Record<string, unknown>
   return (
@@ -52,10 +55,14 @@ export const gravarHistorico = (historico: Historico) => gravar('historico', his
 export const lerPlacar = (): Placar => ler('placar', {}, ehPlacar)
 export const gravarPlacar = (placar: Placar) => gravar('placar', placar)
 
-export const lerConfiguracao = (): Configuracao | null => ler('configuracao', null, ehConfiguracaoOuNulo)
+export const lerConfiguracao = (): Configuracao | null => {
+  const salva = ler('configuracao', null, ehConfiguracaoOuNulo)
+  if (!salva) return null
+  return { ...salva, modo: salva.modo === 'dupla' ? 'dupla' : 'classico' }
+}
 export const gravarConfiguracao = (config: Configuracao) => gravar('configuracao', config)
 
-const ehConfiguracaoOuNulo = (valor: unknown): valor is Configuracao | null =>
+const ehConfiguracaoOuNulo = (valor: unknown): valor is ConfiguracaoSalva | null =>
   valor === null || ehConfiguracao(valor)
 
 export const somarAoPlacar = (
