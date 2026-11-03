@@ -1,0 +1,55 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-fundo: #14121f;
+  --color-superficie: #1f1c30;
+  --color-superficie-alta: #2a2640;
+  --color-borda: #3a3555;
+  --color-texto: #f3f1ff;
+  --color-texto-suave: #a9a3c7;
+  --color-destaque: #f5c542;
+  --color-destaque-escuro: #c99a1c;
+  --color-perigo: #ff6b6b;
+  --color-sucesso: #4ade80;
+  --font-sans: 'Nunito', ui-rounded, 'SF Pro Rounded', system-ui, sans-serif;
+}
+
+@layer base {
+  html,
+  body,
+  #root {
+    min-height: 100dvh;
+  }
+
+  body {
+    @apply bg-fundo text-texto font-sans antialiased;
+    -webkit-tap-highlight-color: transparent;
+    overscroll-behavior: none;
+  }
+
+  button {
+    @apply cursor-pointer;
+    touch-action: manipulation;
+  }
+}
+
+@keyframes surgir {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.animar-entrada {
+  animation: surgir 220ms ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animar-entrada {
+    animation: none;
+  }
+}
