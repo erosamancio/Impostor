@@ -2,7 +2,7 @@
 
 Jogo do impostor web voltado pra celular.
 
-Todos recebem a mesma palavra secreta, menos o impostor. Cada um dá uma dica por rodada, o grupo discute e vota. Se o impostor for pego, ainda pode roubar a vitória adivinhando a palavra. Tudo acontece em um celular só, passado de mão em mão. Sem anúncios e sem login.
+Todos recebem a mesma palavra secreta, menos o impostor. O celular passa de mão em mão para cada um ver o seu segredo; depois, dicas, discussão e voto acontecem na mesa, do jeito do grupo. Quando decidirem, um botão revela o impostor e a palavra. Sem anúncios e sem login.
 
 ## Rodando localmente
 
@@ -28,15 +28,14 @@ Comidas e bebidas, Países, Lugares do Brasil, Lugares da cidade, Animais, Profi
 ## Modos
 
 - **Clássico** (3 a 20 jogadores): todos recebem a mesma palavra, menos o impostor.
-- **Dupla** (2 jogadores): cada um recebe uma palavra do mesmo tema; metade das vezes são iguais, metade são parecidas. Depois das dicas, cada um aposta "iguais" ou "diferentes". Quem aposta "diferentes" e acerta ainda pode chutar a palavra do outro.
+- **Dupla** (2 jogadores): cada um recebe uma palavra do mesmo tema; metade das vezes são iguais, metade são parecidas. Depois das dicas, cada um diz se acha que as palavras são iguais, e o celular revela as duas.
 
 ## Opções do clássico
 
 - **Vários impostores**: 2 a partir de 5 jogadores, 3 a partir de 7. Eles não sabem quem é o outro.
 - **O que o impostor recebe**: o nome do tema, nada, ou um **disfarce** (uma palavra parecida, sem saber que é o impostor).
-- **Tempo por dica**: livre, 20, 30, 45 ou 60 segundos, com contagem na tela. Vale também na dupla.
 
-A tela **Como jogar** explica as regras e a pontuação dentro do próprio jogo.
+A tela **Como jogar** explica as regras dentro do próprio jogo. Cada jogador ganha um personagem desenhado, pela posição na lista.
 
 ## Instalar como app
 

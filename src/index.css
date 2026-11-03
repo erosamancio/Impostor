@@ -135,3 +135,34 @@
     animation: none;
   }
 }
+
+/* Carta aberta: papel claro com faixa de correio aéreo em cima e embaixo. */
+.carta {
+  position: relative;
+  background:
+    radial-gradient(120% 80% at 50% 0%, #fbfcff 0%, transparent 60%), linear-gradient(180deg, #eef2fa 0%, #d9e1f1 100%);
+}
+
+.carta::before,
+.carta::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 12px;
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--color-aereo) 0 9px,
+    transparent 9px 14px,
+    #3b6fe0 14px 23px,
+    transparent 23px 28px
+  );
+}
+
+.carta::before {
+  top: 0;
+}
+
+.carta::after {
+  bottom: 0;
+}

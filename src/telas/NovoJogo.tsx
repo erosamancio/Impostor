@@ -16,16 +16,7 @@ import { useState, type FormEvent, type ReactNode } from 'react'
 import { Avatar } from '../componentes/Avatar'
 import { Botao } from '../componentes/Botao'
 import { Tela } from '../componentes/Tela'
-import {
-  JOGADORES_DUPLA,
-  MAX_JOGADORES,
-  MAX_RODADAS,
-  MIN_JOGADORES,
-  MIN_RODADAS,
-  TEMPOS_DICA,
-  maxImpostores,
-  type Configuracao,
-} from '../jogo/tipos'
+import { JOGADORES_DUPLA, MAX_JOGADORES, MIN_JOGADORES, maxImpostores, type Configuracao } from '../jogo/tipos'
 import { TEMAS } from '../temas'
 
 const ICONES_DOS_TEMAS: Record<string, LucideIcon> = {
@@ -65,7 +56,9 @@ export const NovoJogo = ({ configInicial, aoComecar, aoVoltar }: NovoJogoProps) 
 
   const alternarTema = (id: string) => {
     const selecionado = config.temaIds.includes(id)
-    atualizar({ temaIds: selecionado ? config.temaIds.filter((t) => t !== id) : [...config.temaIds, id] })
+    atualizar({
+      temaIds: selecionado ? config.temaIds.filter((t) => t !== id) : [...config.temaIds, id],
+    })
   }
 
   const todosSelecionados = config.temaIds.length === TEMAS.length
@@ -118,8 +111,11 @@ export const NovoJogo = ({ configInicial, aoComecar, aoVoltar }: NovoJogoProps) 
         {config.jogadores.length > 0 && (
           <ul className="mb-2.5 flex flex-col gap-1.5">
             {config.jogadores.map((nome, i) => (
-              <li key={nome} className="flex items-center gap-3 rounded-xl bg-envelope py-1.5 pr-1.5 pl-2 ring-1 ring-vinco">
-                <Avatar nome={nome} indice={i} />
+              <li
+                key={nome}
+                className="flex items-center gap-3 rounded-xl bg-envelope py-1.5 pr-1.5 pl-2 ring-1 ring-vinco"
+              >
+                <Avatar nome={nome} indice={i} tamanho="medio" />
                 <span className="min-w-0 flex-1 truncate text-[17px] font-semibold">{nome}</span>
                 <button
                   type="button"
@@ -167,7 +163,11 @@ export const NovoJogo = ({ configInicial, aoComecar, aoVoltar }: NovoJogoProps) 
         acao={
           <button
             type="button"
-            onClick={() => atualizar({ temaIds: todosSelecionados ? [] : TEMAS.map((t) => t.id) })}
+            onClick={() =>
+              atualizar({
+                temaIds: todosSelecionados ? [] : TEMAS.map((t) => t.id),
+              })
+            }
             className="-mr-2 min-h-9 rounded-full px-2 text-[15px] font-semibold text-selo active:bg-envelope"
           >
             {todosSelecionados ? 'Limpar' : 'Marcar todos'}
@@ -204,67 +204,30 @@ export const NovoJogo = ({ configInicial, aoComecar, aoVoltar }: NovoJogoProps) 
         />
       </Secao>
 
-      <Secao titulo="Dicas">
-        <div className="flex flex-col gap-2.5">
-          <Contador
-            rotulo="Rodadas"
-            valor={config.rodadas}
-            minimo={MIN_RODADAS}
-            maximo={MAX_RODADAS}
-            aoMudar={(rodadas) => atualizar({ rodadas })}
-          />
-          <Alternador
-            rotulo="Tempo por dica"
-            opcoes={TEMPOS_DICA.map((s) => ({ valor: String(s), rotulo: s === 0 ? 'Livre' : `${s}s` }))}
-            valor={String(config.tempoDica)}
-            aoMudar={(valor) => atualizar({ tempoDica: Number(valor) })}
-          />
-        </div>
-      </Secao>
-
       {!ehDupla && (
-        <>
-          <Secao titulo="Impostores">
-            <div className="flex flex-col gap-2.5">
-              <Contador
-                rotulo="Quantos"
-                valor={impostores}
-                minimo={1}
-                maximo={limiteImpostores}
-                aoMudar={(n) => atualizar({ impostores: n })}
-                nota={limiteImpostores === 1 ? 'Com 5 ou mais jogadores dá para ter 2.' : undefined}
-              />
-              <Alternador
-                rotulo="O que o impostor recebe"
-                opcoes={[
-                  { valor: 'tema', rotulo: 'O tema' },
-                  { valor: 'nenhuma', rotulo: 'Nada' },
-                  { valor: 'disfarcado', rotulo: 'Disfarce' },
-                ]}
-                valor={config.dicaImpostor}
-                aoMudar={(dicaImpostor) => atualizar({ dicaImpostor })}
-              />
-              <p className="text-sm text-papel-suave">{EXPLICACAO_DA_DICA[config.dicaImpostor]}</p>
-            </div>
-          </Secao>
-
-          <Secao titulo="Votação">
-            <Alternador
-              rotulo="Como votar"
-              opcoes={[
-                { valor: 'secreta', rotulo: 'Secreta' },
-                { valor: 'grupo', rotulo: 'Em grupo' },
-              ]}
-              valor={config.modoVotacao}
-              aoMudar={(modoVotacao) => atualizar({ modoVotacao })}
+        <Secao titulo="Impostores">
+          <div className="flex flex-col gap-2.5">
+            <Contador
+              rotulo="Quantos"
+              valor={impostores}
+              minimo={1}
+              maximo={limiteImpostores}
+              aoMudar={(n) => atualizar({ impostores: n })}
+              nota={limiteImpostores === 1 ? 'Com 5 ou mais jogadores dá para ter 2.' : undefined}
             />
-            <p className="mt-2.5 text-sm text-papel-suave">
-              {config.modoVotacao === 'secreta'
-                ? 'Cada um vota escondido, passando o celular.'
-                : 'Vocês conversam e escolhem juntos um suspeito.'}
-            </p>
-          </Secao>
-        </>
+            <Alternador
+              rotulo="O que o impostor recebe"
+              opcoes={[
+                { valor: 'tema', rotulo: 'O tema' },
+                { valor: 'nenhuma', rotulo: 'Nada' },
+                { valor: 'disfarcado', rotulo: 'Disfarce' },
+              ]}
+              valor={config.dicaImpostor}
+              aoMudar={(dicaImpostor) => atualizar({ dicaImpostor })}
+            />
+            <p className="text-sm text-papel-suave">{EXPLICACAO_DA_DICA[config.dicaImpostor]}</p>
+          </div>
+        </Secao>
       )}
     </Tela>
   )
@@ -276,7 +239,12 @@ const EXPLICACAO_DA_DICA: Record<Configuracao['dicaImpostor'], string> = {
   disfarcado: 'O impostor recebe uma palavra parecida e nem sabe que é o impostor.',
 }
 
-type SecaoProps = { titulo: string; contagem?: string; acao?: ReactNode; children: ReactNode }
+type SecaoProps = {
+  titulo: string
+  contagem?: string
+  acao?: ReactNode
+  children: ReactNode
+}
 
 const Secao = ({ titulo, contagem, acao, children }: SecaoProps) => (
   <section className="mb-8">
@@ -289,7 +257,12 @@ const Secao = ({ titulo, contagem, acao, children }: SecaoProps) => (
   </section>
 )
 
-type CartaoDeModoProps = { ativo: boolean; titulo: string; descricao: string; aoEscolher: () => void }
+type CartaoDeModoProps = {
+  ativo: boolean
+  titulo: string
+  descricao: string
+  aoEscolher: () => void
+}
 
 const CartaoDeModo = ({ ativo, titulo, descricao, aoEscolher }: CartaoDeModoProps) => (
   <button
@@ -305,7 +278,13 @@ const CartaoDeModo = ({ ativo, titulo, descricao, aoEscolher }: CartaoDeModoProp
   </button>
 )
 
-type SeloDeTemaProps = { nome: string; total: number; Icone: LucideIcon; ativo: boolean; aoAlternar: () => void }
+type SeloDeTemaProps = {
+  nome: string
+  total: number
+  Icone: LucideIcon
+  ativo: boolean
+  aoAlternar: () => void
+}
 
 /** Cada tema é um selo picotado: amarelo quando entra no sorteio. */
 const SeloDeTema = ({ nome, total, Icone, ativo, aoAlternar }: SeloDeTemaProps) => (
@@ -327,7 +306,9 @@ const SeloDeTema = ({ nome, total, Icone, ativo, aoAlternar }: SeloDeTemaProps) 
         </span>
       </span>
       <span className="mt-auto pt-3 text-[16px] leading-tight font-bold">{nome}</span>
-      <span className={`text-[13px] tabular-nums ${ativo ? 'text-tinta/75' : 'text-papel-suave'}`}>{total} palavras</span>
+      <span className={`text-[13px] tabular-nums ${ativo ? 'text-tinta/75' : 'text-papel-suave'}`}>
+        {total} palavras
+      </span>
     </span>
   </button>
 )
@@ -359,7 +340,12 @@ const Contador = ({ rotulo, valor, minimo, maximo, aoMudar, nota }: ContadorProp
   </div>
 )
 
-type BotaoPassoProps = { rotulo: string; disabled: boolean; onClick: () => void; children: ReactNode }
+type BotaoPassoProps = {
+  rotulo: string
+  disabled: boolean
+  onClick: () => void
+  children: ReactNode
+}
 
 const BotaoPasso = ({ rotulo, disabled, onClick, children }: BotaoPassoProps) => (
   <button
@@ -381,7 +367,11 @@ type AlternadorProps<T extends string> = {
 }
 
 const Alternador = <T extends string>({ rotulo, opcoes, valor, aoMudar }: AlternadorProps<T>) => (
-  <div role="radiogroup" aria-label={rotulo} className="grid grid-flow-col gap-1 rounded-2xl bg-envelope p-1 ring-1 ring-vinco">
+  <div
+    role="radiogroup"
+    aria-label={rotulo}
+    className="grid grid-flow-col gap-1 rounded-2xl bg-envelope p-1 ring-1 ring-vinco"
+  >
     {opcoes.map((opcao) => {
       const ativo = opcao.valor === valor
       return (

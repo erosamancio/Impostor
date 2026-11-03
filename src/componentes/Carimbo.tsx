@@ -10,6 +10,8 @@ export const Carimbo = ({ linhas, cor }: CarimboProps) => (
   >
     <span className="text-[15px] font-extrabold tracking-[0.18em]">{linhas[0]}</span>
     <span className="my-1 h-0.5 w-24 bg-current" />
-    <span className="text-[26px] leading-none font-extrabold tracking-[-0.01em]">{linhas[1]}</span>
+    <span className={`leading-none font-extrabold tracking-[-0.01em] ${linhas[1].length > 8 ? 'text-[19px]' : 'text-[26px]'}`}>
+      {linhas[1]}
+    </span>
   </div>
 )

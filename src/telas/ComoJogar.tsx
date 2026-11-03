@@ -9,21 +9,20 @@ const PASSOS_CLASSICO = [
   {
     titulo: 'Cada um vê o seu segredo',
     texto:
-      'O celular passa de mão em mão. Segure o envelope para ver a palavra. Quem é impostor não recebe a palavra: vê só o tema, ou nada.',
+      'O celular passa de mão em mão. Quem está com ele segura o envelope para ver a palavra. Quem é impostor não recebe a palavra: vê só o tema, ou nada.',
   },
   {
-    titulo: 'Rodadas de dicas',
+    titulo: 'Dicas na mesa',
     texto:
-      'Na ordem que aparece na tela, cada pessoa diz uma palavra ou frase curta sobre a palavra secreta. Clara o bastante para provar que sabe, vaga o bastante para não entregar.',
+      'O celular mostra quem começa. Daí em diante é com vocês: cada um diz uma palavra ou frase curta sobre a palavra secreta, quantas voltas quiserem.',
   },
   {
     titulo: 'Discussão e voto',
-    texto: 'Conversem sobre as dicas e votem em quem parece estar blefando, em segredo ou todos juntos.',
+    texto: 'Conversem, desconfiem e votem em quem parece estar blefando, do jeito que preferirem.',
   },
   {
-    titulo: 'Última chance',
-    texto:
-      'Se pegarem um impostor, ele tenta adivinhar a palavra em voz alta. Acertou, rouba a vitória. Errou, o grupo vence.',
+    titulo: 'Revelar',
+    texto: 'Quando decidirem, toquem em revelar. O celular mostra quem era o impostor e qual era a palavra.',
   },
 ] as const
 
@@ -53,23 +52,13 @@ export const ComoJogar = ({ aoVoltar }: ComoJogarProps) => (
         <Termo nome="Impostor disfarçado">
           O impostor recebe uma palavra parecida, como “moqueca” no lugar de “feijoada”, e nem sabe que é o impostor.
         </Termo>
-        <Termo nome="Tempo por dica">Um relógio na tela marca quanto tempo cada pessoa tem para dar a dica.</Termo>
       </dl>
-    </Secao>
-
-    <Secao titulo="Pontos">
-      <ul className="flex flex-col divide-y divide-vinco overflow-hidden rounded-2xl bg-envelope ring-1 ring-vinco">
-        <Ponto valor={2}>Impostor que não foi pego</Ponto>
-        <Ponto valor={1}>Impostor pego que acertou a palavra</Ponto>
-        <Ponto valor={1}>Quem votou em um impostor</Ponto>
-      </ul>
     </Secao>
 
     <Secao titulo="Dupla" nota="Para 2 pessoas">
       <p className="text-[15px] leading-relaxed text-papel-suave">
-        Cada um recebe uma palavra do mesmo tema. Às vezes são iguais, às vezes só parecidas. Depois das dicas, cada um
-        aposta em segredo se as palavras são iguais. Acertar a aposta vale 1 ponto. Quem acertar que eram diferentes ainda
-        tenta adivinhar a palavra do outro, por mais 1 ponto.
+        Cada um recebe uma palavra do mesmo tema. Às vezes são iguais, às vezes só parecidas. Vocês trocam dicas e, no
+        fim, cada um diz se acha que as palavras são iguais. Depois revelem as duas no celular.
       </p>
     </Secao>
 
@@ -100,11 +89,4 @@ const Termo = ({ nome, children }: { nome: string; children: ReactNode }) => (
     <dt className="text-[17px] font-bold">{nome}</dt>
     <dd className="mt-1 text-[15px] leading-relaxed text-papel-suave">{children}</dd>
   </div>
-)
-
-const Ponto = ({ valor, children }: { valor: number; children: ReactNode }) => (
-  <li className="flex min-h-13 items-center gap-3 px-4 py-3">
-    <span className="flex-1 text-[15px]">{children}</span>
-    <span className="text-xl font-extrabold text-postal tabular-nums">+{valor}</span>
-  </li>
 )

@@ -83,7 +83,7 @@ components:
 
 O jogo inteiro acontece num celular que passa de mão em mão, quase sempre à noite, numa mesa. A interface trata o celular como um envelope de segurança: por fora, azul-tinta escuro e papel; por dentro, um segredo coberto pela trama azul com a palavra IMPOSTOR repetida, que só se abre enquanto o dedo segura o cartão.
 
-O mundo é o do correio: selo amarelo picotado, faixa de correio aéreo vermelha e azul, carimbo postal. O amarelo do selo é a única cor de ação. O vermelho aéreo marca acusação e perigo; o verde postal marca acerto e pontos.
+O mundo é o do correio: selo amarelo picotado, faixa de correio aéreo vermelha e azul, carimbo postal. O amarelo do selo é a única cor de ação. O vermelho aéreo marca o impostor revelado; o verde postal marca palavras iguais.
 
 ## Cores
 
@@ -91,7 +91,7 @@ O mundo é o do correio: selo amarelo picotado, faixa de correio aéreo vermelha
 - **envelope / envelope-alto / vinco** são as superfícies e bordas, sempre com `ring-1 ring-vinco` em vez de sombra pesada.
 - **papel** é o texto principal; **papel-suave** o de apoio. Nunca cinza neutro: tudo puxa para o azul.
 - **selo** é a ação principal, a palavra secreta e os destaques. Uma cor de ação só.
-- **aereo** é acusação, voto e impostor revelado. **postal** é acerto e pontos ganhos.
+- **aereo** é o impostor revelado e a confirmação de revelar. **postal** é acerto.
 
 ## Tipografia
 
@@ -105,10 +105,16 @@ Sombras difusas e azuladas (`shadow-carta`, `shadow-selo`), nunca sombra dura de
 
 Entrada curta (`surgir`, 360ms, ease-saida) em cada tela. A trama do envelope sobe por clip-path em 200ms. O carimbo do resultado é o único momento de movimento forte. Tudo respeita `prefers-reduced-motion`.
 
+## Carta aberta e personagens
+
+- A carta de dentro do envelope é papel claro com faixa de correio aéreo, carimbo "Correio secreto" e selo. Palavra e aviso de impostor usam o mesmo desenho, com o mesmo tamanho de texto e uma nota de duas linhas, para não vazar nada de longe.
+- Cada jogador é um personagem desenhado em SVG (12 ao todo), como o retrato de um selo: fundo colorido, rosto e um detalhe que distingue de longe.
+
 ## Regras do jogo que viram regras de design
 
 - **O cartão do impostor é idêntico ao de quem sabe a palavra.** Mesma cor, mesmo tamanho, mesmo amarelo. Nada de vermelho, nada de vibração. De longe ninguém pode distinguir.
-- **Uma pessoa por vez.** Toda tela de segredo vem depois de "Passe o celular para…" e de "Sou eu, nome".
+- **Uma pessoa por vez.** A mesma tela chama quem deve pegar o celular e guarda o segredo dessa pessoa.
+- **O celular sai de cena.** Dicas, discussão e voto são na mesa; o app só mostra quem começa e revela no fim, com um toque de confirmação.
 - **Ações embaixo, ao alcance do polegar.** O rodapé é fixo, com degradê para tinta.
 
 ## Faça e não faça
