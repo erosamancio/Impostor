@@ -31,8 +31,8 @@ const ehPlacar = (valor: unknown): valor is Placar =>
   !Array.isArray(valor) &&
   Object.values(valor).every((pontos) => typeof pontos === 'number')
 
-/** Configuração salva; `modo` é opcional porque versões antigas não o gravavam. */
-type ConfiguracaoSalva = Omit<Configuracao, 'modo'> & { modo?: unknown }
+/** Configuração salva; `modo` e `nivel` são opcionais porque versões antigas não os gravavam. */
+type ConfiguracaoSalva = Omit<Configuracao, 'modo' | 'nivel'> & { modo?: unknown; nivel?: unknown }
 
 const ehConfiguracao = (valor: unknown): valor is ConfiguracaoSalva => {
   if (typeof valor !== 'object' || valor === null) return false
@@ -58,7 +58,11 @@ export const gravarPlacar = (placar: Placar) => gravar('placar', placar)
 export const lerConfiguracao = (): Configuracao | null => {
   const salva = ler('configuracao', null, ehConfiguracaoOuNulo)
   if (!salva) return null
-  return { ...salva, modo: salva.modo === 'dupla' ? 'dupla' : 'classico' }
+  return {
+    ...salva,
+    modo: salva.modo === 'dupla' ? 'dupla' : 'classico',
+    nivel: salva.nivel === 'facil' || salva.nivel === 'medio' ? salva.nivel : 'todos',
+  }
 }
 export const gravarConfiguracao = (config: Configuracao) => gravar('configuracao', config)
 

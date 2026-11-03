@@ -25,7 +25,7 @@ export const criarPartida = (
     throw new Error(`O modo clássico precisa de pelo menos ${MIN_JOGADORES} jogadores`)
   }
 
-  const sorteada = sortearPalavra(temas, historico, aleatorio)
+  const sorteada = sortearPalavra(temas, historico, aleatorio, config.nivel)
   const impostor = sortearIndice(totalJogadores, aleatorio)
 
   return {

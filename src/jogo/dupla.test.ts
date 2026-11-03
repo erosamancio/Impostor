@@ -10,7 +10,7 @@ import {
   type PartidaDupla,
 } from './dupla'
 
-const config = { jogadores: ['Eros', 'Bia'] as const, rodadas: 2 }
+const config = { jogadores: ['Eros', 'Bia'] as const, rodadas: 2, nivel: 'todos' as const }
 const nova = () => criarPartidaDupla(config, [comidasEBebidas], [], Math.random).partida
 const aplicar = (partida: PartidaDupla, acoes: AcaoDupla[]) => acoes.reduce(avancarDupla, partida)
 

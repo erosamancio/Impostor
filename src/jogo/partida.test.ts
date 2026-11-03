@@ -12,6 +12,7 @@ const sequencia = (valores: number[]): Aleatorio => {
 
 const config: Configuracao = {
   modo: 'classico',
+  nivel: 'todos',
   jogadores: ['Ana', 'Bia', 'Caio', 'Duda'],
   temaIds: [comidasEBebidas.id],
   rodadas: 2,
@@ -127,5 +128,21 @@ describe('apurarVotos', () => {
     expect(apurarVotos([1, 2, 1, 1])).toBe(1)
     expect(apurarVotos([1, 0, 1, 0])).toBeNull()
     expect(apurarVotos([null, null])).toBeNull()
+  })
+})
+
+describe('nível de dificuldade', () => {
+  it('no nível fácil só sorteia palavras fáceis', () => {
+    const faceis = new Set(comidasEBebidas.palavras.filter((p) => p.dificuldade === 'facil').map((p) => p.texto))
+    for (let i = 0; i < 300; i++) {
+      expect(faceis.has(sortearPalavra([comidasEBebidas], [], Math.random, 'facil').palavra)).toBe(true)
+    }
+  })
+
+  it('no nível médio nunca sorteia palavras difíceis', () => {
+    const dificeis = new Set(comidasEBebidas.palavras.filter((p) => p.dificuldade === 'dificil').map((p) => p.texto))
+    for (let i = 0; i < 300; i++) {
+      expect(dificeis.has(sortearPalavra([comidasEBebidas], [], Math.random, 'medio').palavra)).toBe(false)
+    }
   })
 })

@@ -18,6 +18,10 @@ npm run build   # versão de produção em dist/
 - `src/jogo/` regras da partida (funções puras e testadas), sorteio e armazenamento local
 - `src/temas/` um arquivo por tema com as palavras, a dificuldade e as palavras irmãs
 
+## Temas
+
+Comidas e bebidas, Países, Lugares do Brasil, Lugares da cidade, Animais, Profissões e Esportes. Dá para jogar com um tema ou misturar vários, e filtrar as palavras por dificuldade.
+
 ## Modos
 
 - **Clássico** (3 a 20 jogadores): todos recebem a mesma palavra, menos o impostor.
