@@ -2,7 +2,8 @@ export type ModoJogo = 'classico' | 'dupla'
 /** Dificuldade máxima das palavras sorteadas. */
 export type Nivel = 'facil' | 'medio' | 'todos'
 export type ModoVotacao = 'secreta' | 'grupo'
-export type DicaImpostor = 'tema' | 'nenhuma'
+/** O que o impostor recebe: o nome do tema, nada, ou uma palavra parecida sem saber que é o impostor. */
+export type DicaImpostor = 'tema' | 'nenhuma' | 'disfarcado'
 
 export type Configuracao = {
   modo: ModoJogo
@@ -12,6 +13,9 @@ export type Configuracao = {
   rodadas: number
   dicaImpostor: DicaImpostor
   modoVotacao: ModoVotacao
+  impostores: number
+  /** Segundos por dica; 0 = sem timer. */
+  tempoDica: number
 }
 
 export type Etapa =
@@ -26,8 +30,10 @@ export type Partida = {
   config: Configuracao
   temaNome: string
   palavra: string
-  /** Índice do impostor em config.jogadores. */
-  impostor: number
+  /** Índices dos impostores em config.jogadores. */
+  impostores: readonly number[]
+  /** Palavra parecida entregue aos impostores no modo disfarçado; null nos outros modos. */
+  palavraDisfarce: string | null
   /** Ordem de fala: índices de config.jogadores. */
   ordem: readonly number[]
   etapa: Etapa
@@ -49,3 +55,8 @@ export const JOGADORES_DUPLA = 2
 export const MAX_JOGADORES = 20
 export const MIN_RODADAS = 1
 export const MAX_RODADAS = 5
+export const TEMPOS_DICA = [0, 20, 30, 45, 60] as const
+
+/** Até 3 impostores, sempre menos da metade da mesa. */
+export const maxImpostores = (totalJogadores: number): number =>
+  Math.max(1, Math.min(3, Math.floor((totalJogadores - 1) / 2)))

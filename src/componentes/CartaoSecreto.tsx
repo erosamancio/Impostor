@@ -1,17 +1,21 @@
+import { Fingerprint } from 'lucide-react'
 import { useEffect, useState, type ReactNode } from 'react'
 import { Botao } from './Botao'
 import { Tela } from './Tela'
 
 type CartaoSecretoProps = {
   nome: string
-  alerta?: boolean
+  etapa?: string
   aoConcluir: () => void
   /** Conteúdo mostrado só enquanto o dedo está no cartão. */
   children: ReactNode
 }
 
-/** Cartão que só mostra o segredo enquanto é pressionado e esconde ao trocar de aba. */
-export const CartaoSecreto = ({ nome, alerta = false, aoConcluir, children }: CartaoSecretoProps) => {
+/**
+ * O segredo fica sob a trama de envelope de segurança, que só se abre enquanto o cartão é pressionado.
+ * O cartão tem a mesma aparência para todos, impostor ou não, para que ninguém descubra nada pela cor.
+ */
+export const CartaoSecreto = ({ nome, etapa, aoConcluir, children }: CartaoSecretoProps) => {
   const [visivel, setVisivel] = useState(false)
   const [jaViu, setJaViu] = useState(false)
 
@@ -34,18 +38,20 @@ export const CartaoSecreto = ({ nome, alerta = false, aoConcluir, children }: Ca
   return (
     <Tela
       titulo={nome}
-      subtitulo="Segure o cartão para ver. Solte para esconder."
+      etapa={etapa}
       rodape={
         <Botao disabled={!jaViu} onClick={aoConcluir}>
-          Já vi, passar adiante
+          Já vi, fechar e passar
         </Botao>
       }
     >
+      <p className="mb-5 text-[15px] text-papel-suave">Segure o envelope para abrir. Solte para fechar.</p>
       <div className="flex flex-1 items-center justify-center">
         <div
           role="button"
           tabIndex={0}
-          aria-label="Segure para ver sua palavra"
+          aria-label="Segure para ver o seu segredo"
+          aria-pressed={visivel}
           onPointerDown={mostrar}
           onPointerUp={esconder}
           onPointerLeave={esconder}
@@ -53,34 +59,50 @@ export const CartaoSecreto = ({ nome, alerta = false, aoConcluir, children }: Ca
           onKeyDown={(e) => e.key === ' ' && mostrar()}
           onKeyUp={esconder}
           onContextMenu={(e) => e.preventDefault()}
-          className={`flex aspect-[3/4] w-full max-w-80 touch-none flex-col items-center justify-center rounded-3xl border-2 p-6 text-center select-none [-webkit-touch-callout:none] transition-colors duration-100 ${
-            visivel
-              ? alerta
-                ? 'border-perigo bg-perigo/15'
-                : 'border-destaque bg-destaque/10'
-              : 'border-borda bg-superficie active:bg-superficie-alta'
-          }`}
+          className="relative aspect-[3/4] w-full max-w-80 touch-none overflow-hidden rounded-[22px] bg-envelope shadow-carta ring-1 ring-vinco select-none [-webkit-touch-callout:none]"
         >
-          {visivel ? children : <Verso />}
+          <div className="absolute inset-0 flex flex-col items-center justify-center p-7 text-center">
+            {visivel && children}
+          </div>
+          <div
+            aria-hidden
+            className={`trama absolute inset-0 flex flex-col items-center justify-center gap-4 transition-[clip-path] duration-200 ease-(--ease-saida) ${
+              visivel ? '[clip-path:inset(0_0_100%_0)]' : '[clip-path:inset(0_0_0_0)]'
+            }`}
+          >
+            <span className="flex size-20 items-center justify-center rounded-full bg-tinta/85 text-selo ring-1 ring-vinco">
+              <Fingerprint size={40} strokeWidth={1.75} />
+            </span>
+            <span className="rounded-full bg-tinta/85 px-4 py-1.5 text-[17px] font-bold">Segure para abrir</span>
+          </div>
         </div>
       </div>
     </Tela>
   )
 }
 
-const Verso = () => (
+/** Conteúdo do cartão para quem recebeu uma palavra. */
+export const PalavraSecreta = ({ palavra, temaNome, nota }: { palavra: string; temaNome: string; nota?: string }) => (
   <>
-    <span className="text-7xl" aria-hidden>
-      🤫
-    </span>
-    <span className="mt-4 text-xl font-extrabold">Segure para ver</span>
+    <span className="text-[15px] font-semibold text-papel-suave">A sua palavra é</span>
+    <span className="mt-2 text-[40px] leading-[1.05] font-extrabold tracking-[-0.03em] break-words text-selo">{palavra}</span>
+    <span className="mt-6 rounded-full bg-tinta px-3 py-1 text-sm font-semibold text-papel-suave">{temaNome}</span>
+    {nota && <span className="mt-4 text-sm text-papel-suave">{nota}</span>}
   </>
 )
 
-export const PalavraSecreta = ({ palavra, temaNome }: { palavra: string; temaNome: string }) => (
+/** Conteúdo do cartão para o impostor. Mesmo tamanho e cor de uma palavra, para não vazar nada de longe. */
+export const AvisoDeImpostor = ({ dica, total }: { dica: string | null; total: number }) => (
   <>
-    <span className="text-lg font-bold text-texto-suave">A palavra é</span>
-    <span className="text-4xl font-black break-words text-destaque">{palavra}</span>
-    <span className="mt-6 text-texto-suave">Tema: {temaNome}</span>
+    <span className="text-[15px] font-semibold text-papel-suave">Você é</span>
+    <span className="mt-2 text-[40px] leading-[1.05] font-extrabold tracking-[-0.03em] text-selo">
+      {total > 1 ? 'um impostor' : 'o impostor'}
+    </span>
+    <span className="mt-6 rounded-full bg-tinta px-3 py-1 text-sm font-semibold text-papel-suave">
+      {dica ? dica : 'Sem dica'}
+    </span>
+    <span className="mt-4 text-sm text-papel-suave">
+      {total > 1 ? `São ${total} impostores, e vocês não sabem quem é o outro. ` : ''}Ouça as dicas e se misture.
+    </span>
   </>
 )

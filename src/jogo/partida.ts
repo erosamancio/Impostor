@@ -1,7 +1,7 @@
 import type { Tema } from '../temas'
 import { sortearIndice, type Aleatorio } from './aleatorio'
-import { sortearOrdem, sortearPalavra, type Historico } from './sorteio'
-import { MIN_JOGADORES, type Configuracao, type Partida } from './tipos'
+import { sortearImpostores, sortearOrdem, sortearPalavra, type Historico } from './sorteio'
+import { MIN_JOGADORES, maxImpostores, type Configuracao, type Partida } from './tipos'
 
 export type Acao =
   | { tipo: 'proximaRevelacao' }
@@ -26,7 +26,11 @@ export const criarPartida = (
   }
 
   const sorteada = sortearPalavra(temas, historico, aleatorio, config.nivel)
-  const impostor = sortearIndice(totalJogadores, aleatorio)
+  const quantidade = Math.min(Math.max(1, config.impostores), maxImpostores(totalJogadores))
+  const impostores = sortearImpostores(totalJogadores, quantidade, aleatorio)
+  const irmas = sorteada.tema.palavras.find((p) => p.texto === sorteada.palavra)?.irmas ?? []
+  const palavraDisfarce =
+    config.dicaImpostor === 'disfarcado' ? (irmas[sortearIndice(irmas.length, aleatorio)] ?? null) : null
 
   return {
     historico: sorteada.historico,
@@ -34,8 +38,9 @@ export const criarPartida = (
       config,
       temaNome: sorteada.tema.nome,
       palavra: sorteada.palavra,
-      impostor,
-      ordem: sortearOrdem(totalJogadores, impostor, aleatorio),
+      impostores,
+      palavraDisfarce,
+      ordem: sortearOrdem(totalJogadores, impostores, aleatorio),
       etapa: 'revelacao',
       revelacaoAtual: 0,
       rodadaAtual: 1,
@@ -120,18 +125,20 @@ export const contarVotos = (votos: readonly (number | null)[]): Map<number, numb
   return contagem
 }
 
+export const ehImpostor = (partida: Partida, jogador: number | null): boolean =>
+  jogador !== null && partida.impostores.includes(jogador)
+
 const definirAcusado = (partida: Partida, acusado: number | null): Partida => ({
   ...partida,
   acusado,
-  etapa: acusado === partida.impostor ? 'ultimaChance' : 'resultado',
+  etapa: ehImpostor(partida, acusado) ? 'ultimaChance' : 'resultado',
 })
 
 export type Vencedor = 'grupo' | 'impostor'
 
-export const definirVencedor = (partida: Partida): Vencedor => {
-  const impostorEscapou = partida.acusado !== partida.impostor
-  return impostorEscapou || partida.chuteCerto ? 'impostor' : 'grupo'
-}
+/** O grupo só vence se acusar um impostor e ele errar o chute da palavra. */
+export const definirVencedor = (partida: Partida): Vencedor =>
+  ehImpostor(partida, partida.acusado) && !partida.chuteCerto ? 'grupo' : 'impostor'
 
 export const PONTOS = {
   votoCerto: 1,
@@ -142,20 +149,26 @@ export const PONTOS = {
 /** pontos[i] = pontos do jogador i nesta partida. */
 export const calcularPontos = (partida: Partida): number[] =>
   partida.config.jogadores.map((_, jogador) =>
-    jogador === partida.impostor
-      ? pontosDoImpostor(partida)
-      : pontosDeQuemSabia(partida, jogador),
+    ehImpostor(partida, jogador) ? pontosDoImpostor(partida, jogador) : pontosDeQuemSabia(partida, jogador),
   )
 
-const pontosDoImpostor = (partida: Partida): number => {
-  if (partida.acusado !== partida.impostor) return PONTOS.impostorEscapou
+const pontosDoImpostor = (partida: Partida, jogador: number): number => {
+  if (partida.acusado !== jogador) return PONTOS.impostorEscapou
   return partida.chuteCerto ? PONTOS.chuteCerto : 0
 }
 
 const pontosDeQuemSabia = (partida: Partida, jogador: number): number => {
-  const acertou =
-    partida.config.modoVotacao === 'secreta'
-      ? partida.votos[jogador] === partida.impostor
-      : partida.acusado === partida.impostor
-  return acertou ? PONTOS.votoCerto : 0
+  const alvo = partida.config.modoVotacao === 'secreta' ? (partida.votos[jogador] ?? null) : partida.acusado
+  return ehImpostor(partida, alvo) ? PONTOS.votoCerto : 0
+}
+
+/** O que cada jogador viu no cartão secreto. */
+export type Segredo =
+  | { tipo: 'palavra'; palavra: string }
+  | { tipo: 'impostor'; dica: string | null }
+
+export const segredoDe = (partida: Partida, jogador: number): Segredo => {
+  if (!ehImpostor(partida, jogador)) return { tipo: 'palavra', palavra: partida.palavra }
+  if (partida.palavraDisfarce !== null) return { tipo: 'palavra', palavra: partida.palavraDisfarce }
+  return { tipo: 'impostor', dica: partida.config.dicaImpostor === 'tema' ? partida.temaNome : null }
 }

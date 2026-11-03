@@ -51,18 +51,28 @@ const historicoSem = (temas: readonly Tema[], historico: Historico): Historico =
   return historico.filter((item) => !prefixos.some((prefixo) => item.startsWith(prefixo)))
 }
 
-/** Ordem de fala aleatória em que o impostor nunca começa. */
+/** Sorteia `quantidade` jogadores distintos. */
+export const sortearImpostores = (
+  totalJogadores: number,
+  quantidade: number,
+  aleatorio: Aleatorio,
+): number[] => {
+  const indices = Array.from({ length: totalJogadores }, (_, i) => i)
+  return embaralhar(indices, aleatorio).slice(0, quantidade).sort((a, b) => a - b)
+}
+
+/** Ordem de fala aleatória em que nenhum impostor começa. */
 export const sortearOrdem = (
   totalJogadores: number,
-  impostor: number,
+  impostores: readonly number[],
   aleatorio: Aleatorio,
 ): number[] => {
   const indices = Array.from({ length: totalJogadores }, (_, i) => i)
   const ordem = embaralhar(indices, aleatorio)
-  if (ordem[0] !== impostor) return ordem
-
-  const troca = 1 + sortearIndice(ordem.length - 1, aleatorio)
-  ordem[0] = ordem[troca] as number
-  ordem[troca] = impostor
+  const primeiroInocente = ordem.findIndex((j) => !impostores.includes(j))
+  if (primeiroInocente <= 0) return ordem
+  const inocente = ordem[primeiroInocente] as number
+  ordem[primeiroInocente] = ordem[0] as number
+  ordem[0] = inocente
   return ordem
 }
