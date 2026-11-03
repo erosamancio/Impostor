@@ -31,8 +31,9 @@ const ehPlacar = (valor: unknown): valor is Placar =>
   !Array.isArray(valor) &&
   Object.values(valor).every((pontos) => typeof pontos === 'number')
 
-/** Configuração salva; `modo` e `nivel` são opcionais porque versões antigas não os gravavam. */
-type ConfiguracaoSalva = Omit<Configuracao, 'modo' | 'nivel'> & { modo?: unknown; nivel?: unknown }
+/** Configuração salva; os campos novos são opcionais porque versões antigas não os gravavam. */
+type CamposNovos = 'modo' | 'nivel' | 'impostores' | 'tempoDica'
+type ConfiguracaoSalva = Omit<Configuracao, CamposNovos> & Partial<Record<CamposNovos, unknown>>
 
 const ehConfiguracao = (valor: unknown): valor is ConfiguracaoSalva => {
   if (typeof valor !== 'object' || valor === null) return false
@@ -41,7 +42,7 @@ const ehConfiguracao = (valor: unknown): valor is ConfiguracaoSalva => {
     ehListaDeTextos(config.jogadores) &&
     ehListaDeTextos(config.temaIds) &&
     typeof config.rodadas === 'number' &&
-    (config.dicaImpostor === 'tema' || config.dicaImpostor === 'nenhuma') &&
+    (config.dicaImpostor === 'tema' || config.dicaImpostor === 'nenhuma' || config.dicaImpostor === 'disfarcado') &&
     (config.modoVotacao === 'secreta' || config.modoVotacao === 'grupo')
   )
 }
@@ -62,6 +63,8 @@ export const lerConfiguracao = (): Configuracao | null => {
     ...salva,
     modo: salva.modo === 'dupla' ? 'dupla' : 'classico',
     nivel: salva.nivel === 'facil' || salva.nivel === 'medio' ? salva.nivel : 'todos',
+    impostores: typeof salva.impostores === 'number' ? salva.impostores : 1,
+    tempoDica: typeof salva.tempoDica === 'number' ? salva.tempoDica : 0,
   }
 }
 export const gravarConfiguracao = (config: Configuracao) => gravar('configuracao', config)

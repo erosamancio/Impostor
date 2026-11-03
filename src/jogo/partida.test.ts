@@ -1,14 +1,16 @@
 import { describe, expect, it } from 'vitest'
 import { comidasEBebidas } from '../temas/comidas-e-bebidas'
-import type { Aleatorio } from './aleatorio'
-import { apurarVotos, avancarPartida, calcularPontos, criarPartida, definirVencedor, type Acao } from './partida'
+import {
+  apurarVotos,
+  avancarPartida,
+  calcularPontos,
+  criarPartida,
+  definirVencedor,
+  segredoDe,
+  type Acao,
+} from './partida'
 import { sortearOrdem, sortearPalavra } from './sorteio'
 import type { Configuracao, Partida } from './tipos'
-
-const sequencia = (valores: number[]): Aleatorio => {
-  let i = 0
-  return () => valores[i++ % valores.length] ?? 0
-}
 
 const config: Configuracao = {
   modo: 'classico',
@@ -18,10 +20,15 @@ const config: Configuracao = {
   rodadas: 2,
   dicaImpostor: 'tema',
   modoVotacao: 'secreta',
+  impostores: 1,
+  tempoDica: 0,
 }
 
-const novaPartida = (aleatorio: Aleatorio = Math.random, sobrescrever: Partial<Configuracao> = {}) =>
+const novaPartida = (aleatorio: () => number = Math.random, sobrescrever: Partial<Configuracao> = {}) =>
   criarPartida({ ...config, ...sobrescrever }, [comidasEBebidas], [], aleatorio).partida
+
+/** Fixa o jogador 0 como único impostor, para os testes de votação e pontos. */
+const comAnaImpostora = (partida: Partida): Partida => ({ ...partida, impostores: [0] })
 
 const aplicar = (partida: Partida, acoes: Acao[]) => acoes.reduce(avancarPartida, partida)
 const repetir = (acao: Acao, vezes: number): Acao[] => Array.from({ length: vezes }, () => acao)
@@ -34,8 +41,8 @@ describe('criarPartida', () => {
   it('sorteia uma palavra do tema e um impostor válido', () => {
     const partida = novaPartida()
     expect(comidasEBebidas.palavras.map((p) => p.texto)).toContain(partida.palavra)
-    expect(partida.impostor).toBeGreaterThanOrEqual(0)
-    expect(partida.impostor).toBeLessThan(4)
+    expect(partida.impostores[0]).toBeGreaterThanOrEqual(0)
+    expect(partida.impostores[0]).toBeLessThan(4)
     expect(partida.etapa).toBe('revelacao')
   })
 })
@@ -44,7 +51,7 @@ describe('sortearOrdem', () => {
   it('inclui todos os jogadores e o impostor nunca começa', () => {
     for (let impostor = 0; impostor < 5; impostor++) {
       for (let tentativa = 0; tentativa < 50; tentativa++) {
-        const ordem = sortearOrdem(5, impostor, Math.random)
+        const ordem = sortearOrdem(5, [impostor], Math.random)
         expect([...ordem].sort()).toEqual([0, 1, 2, 3, 4])
         expect(ordem[0]).not.toBe(impostor)
       }
@@ -85,9 +92,7 @@ describe('fluxo da partida', () => {
   })
 
   it('voto secreto que acerta o impostor leva à última chance', () => {
-    // impostor = índice 0 (aleatório sempre 0)
-    const partida = aplicar(novaPartida(sequencia([0])), [{ tipo: 'irParaVotacao' }])
-    expect(partida.impostor).toBe(0)
+    const partida = aplicar(comAnaImpostora(novaPartida()), [{ tipo: 'irParaVotacao' }])
     const votada = aplicar(partida, [
       { tipo: 'votar', acusado: 1 }, // Ana (impostora) vota na Bia
       { tipo: 'votar', acusado: 0 },
@@ -108,7 +113,7 @@ describe('fluxo da partida', () => {
   })
 
   it('impostor que escapa ganha 2 pontos', () => {
-    const partida = aplicar(novaPartida(sequencia([0]), { modoVotacao: 'grupo' }), [
+    const partida = aplicar(comAnaImpostora(novaPartida(Math.random, { modoVotacao: 'grupo' })), [
       { tipo: 'irParaVotacao' },
       { tipo: 'acusarEmGrupo', acusado: 2 },
     ])
@@ -144,5 +149,56 @@ describe('nível de dificuldade', () => {
     for (let i = 0; i < 300; i++) {
       expect(dificeis.has(sortearPalavra([comidasEBebidas], [], Math.random, 'medio').palavra)).toBe(false)
     }
+  })
+})
+
+describe('vários impostores', () => {
+  const seis: Partial<Configuracao> = { jogadores: ['A', 'B', 'C', 'D', 'E', 'F'], impostores: 2 }
+
+  it('sorteia a quantidade pedida, limitada a menos da metade da mesa', () => {
+    expect(novaPartida(Math.random, seis).impostores).toHaveLength(2)
+    expect(novaPartida(Math.random, { impostores: 3 }).impostores).toHaveLength(1)
+  })
+
+  it('nenhum impostor começa a rodada', () => {
+    for (let i = 0; i < 200; i++) {
+      const partida = novaPartida(Math.random, seis)
+      expect(partida.impostores).not.toContain(partida.ordem[0])
+    }
+  })
+
+  it('pegar um impostor: o outro escapa e pontua', () => {
+    const partida = novaPartida(Math.random, { ...seis, modoVotacao: 'grupo' })
+    const [pego, fugitivo] = partida.impostores as [number, number]
+    const fim = aplicar(partida, [
+      { tipo: 'irParaVotacao' },
+      { tipo: 'acusarEmGrupo', acusado: pego },
+      { tipo: 'registrarChute', acertou: false },
+    ])
+    expect(definirVencedor(fim)).toBe('grupo')
+    const pontos = calcularPontos(fim)
+    expect(pontos[pego]).toBe(0)
+    expect(pontos[fugitivo]).toBe(2)
+  })
+})
+
+describe('impostor disfarçado', () => {
+  it('o impostor vê uma palavra irmã, como se fosse um jogador comum', () => {
+    for (let i = 0; i < 100; i++) {
+      const partida = novaPartida(Math.random, { dicaImpostor: 'disfarcado' })
+      const impostor = partida.impostores[0] ?? 0
+      const segredo = segredoDe(partida, impostor)
+      expect(segredo.tipo).toBe('palavra')
+      const irmas = comidasEBebidas.palavras.find((p) => p.texto === partida.palavra)?.irmas
+      expect(irmas).toContain(segredo.tipo === 'palavra' ? segredo.palavra : '')
+    }
+  })
+
+  it('sem disfarce, o impostor vê o aviso com ou sem o tema', () => {
+    const comTema = comAnaImpostora(novaPartida())
+    expect(segredoDe(comTema, 0)).toEqual({ tipo: 'impostor', dica: comidasEBebidas.nome })
+    expect(segredoDe(comTema, 1)).toEqual({ tipo: 'palavra', palavra: comTema.palavra })
+    const semDica = comAnaImpostora(novaPartida(Math.random, { dicaImpostor: 'nenhuma' }))
+    expect(segredoDe(semDica, 0)).toEqual({ tipo: 'impostor', dica: null })
   })
 })

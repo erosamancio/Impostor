@@ -1,3 +1,17 @@
+import {
+  Briefcase,
+  Building2,
+  Check,
+  Globe2,
+  MapPinned,
+  Minus,
+  PawPrint,
+  Plus,
+  Trophy,
+  UtensilsCrossed,
+  X,
+  type LucideIcon,
+} from 'lucide-react'
 import { useState, type FormEvent, type ReactNode } from 'react'
 import { Avatar } from '../componentes/Avatar'
 import { Botao } from '../componentes/Botao'
@@ -8,9 +22,21 @@ import {
   MAX_RODADAS,
   MIN_JOGADORES,
   MIN_RODADAS,
+  TEMPOS_DICA,
+  maxImpostores,
   type Configuracao,
 } from '../jogo/tipos'
 import { TEMAS } from '../temas'
+
+const ICONES_DOS_TEMAS: Record<string, LucideIcon> = {
+  'comidas-e-bebidas': UtensilsCrossed,
+  paises: Globe2,
+  'lugares-do-brasil': MapPinned,
+  'lugares-da-cidade': Building2,
+  animais: PawPrint,
+  profissoes: Briefcase,
+  esportes: Trophy,
+}
 
 type NovoJogoProps = {
   configInicial: Configuracao
@@ -49,112 +75,125 @@ export const NovoJogo = ({ configInicial, aoComecar, aoVoltar }: NovoJogoProps) 
   const faltamJogadores = Math.max(0, minimo - config.jogadores.length)
   const sobramJogadores = Math.max(0, config.jogadores.length - maximo)
   const podeComecar = faltamJogadores === 0 && sobramJogadores === 0 && config.temaIds.length > 0
+  const limiteImpostores = maxImpostores(Math.max(config.jogadores.length, MIN_JOGADORES))
+  const impostores = Math.min(config.impostores, limiteImpostores)
+
+  const rotuloDoBotao =
+    faltamJogadores > 0
+      ? `Adicione mais ${faltamJogadores} ${faltamJogadores === 1 ? 'jogador' : 'jogadores'}`
+      : sobramJogadores > 0
+        ? `A dupla é só para 2: remova ${sobramJogadores}`
+        : config.temaIds.length === 0
+          ? 'Escolha pelo menos um tema'
+          : 'Começar'
 
   return (
     <Tela
       titulo="Novo jogo"
       aoVoltar={aoVoltar}
       rodape={
-        <Botao disabled={!podeComecar} onClick={() => aoComecar(config)}>
-          {faltamJogadores > 0
-            ? `Adicione mais ${faltamJogadores} ${faltamJogadores === 1 ? 'jogador' : 'jogadores'}`
-            : sobramJogadores > 0
-              ? `Remova ${sobramJogadores} ${sobramJogadores === 1 ? 'jogador' : 'jogadores'}`
-              : config.temaIds.length === 0
-              ? 'Escolha um tema'
-              : 'Começar'}
+        <Botao disabled={!podeComecar} onClick={() => aoComecar({ ...config, impostores })}>
+          {rotuloDoBotao}
         </Botao>
       }
     >
       <Secao titulo="Modo">
-        <Alternador
-          opcoes={[
-            { valor: 'classico', rotulo: 'Clássico' },
-            { valor: 'dupla', rotulo: 'Dupla' },
-          ]}
-          valor={config.modo}
-          aoMudar={(modo) => atualizar({ modo })}
-        />
-        <p className="mt-2 text-sm text-texto-suave">
-          {ehDupla
-            ? 'Para 2 pessoas. Cada um recebe uma palavra, que pode ser igual ou só parecida com a do outro.'
-            : 'Para 3 ou mais. Todos sabem a palavra, menos o impostor.'}
-        </p>
+        <div className="grid grid-cols-2 gap-2.5">
+          <CartaoDeModo
+            ativo={!ehDupla}
+            titulo="Clássico"
+            descricao="3 ou mais. Todos sabem a palavra, menos o impostor."
+            aoEscolher={() => atualizar({ modo: 'classico' })}
+          />
+          <CartaoDeModo
+            ativo={ehDupla}
+            titulo="Dupla"
+            descricao="Só 2. Palavras iguais ou parecidas: quem percebe?"
+            aoEscolher={() => atualizar({ modo: 'dupla' })}
+          />
+        </div>
       </Secao>
 
-      <Secao titulo={`Jogadores (${config.jogadores.length})`}>
-        <ul className="flex flex-col gap-2">
-          {config.jogadores.map((nome, i) => (
-            <li key={nome} className="flex items-center gap-3 rounded-2xl bg-superficie py-2 pr-2 pl-3">
-              <Avatar nome={nome} indice={i} />
-              <span className="min-w-0 flex-1 truncate text-lg font-bold">{nome}</span>
-              <button
-                type="button"
-                onClick={() => removerJogador(nome)}
-                aria-label={`Remover ${nome}`}
-                className="flex size-10 items-center justify-center rounded-full text-xl text-texto-suave active:bg-superficie-alta"
-              >
-                ✕
-              </button>
-            </li>
-          ))}
-        </ul>
-        <form onSubmit={adicionarJogador} className="mt-2 flex gap-2">
+      <Secao titulo="Jogadores" contagem={`${config.jogadores.length}${ehDupla ? ' de 2' : ''}`}>
+        {config.jogadores.length > 0 && (
+          <ul className="mb-2.5 flex flex-col gap-1.5">
+            {config.jogadores.map((nome, i) => (
+              <li key={nome} className="flex items-center gap-3 rounded-xl bg-envelope py-1.5 pr-1.5 pl-2 ring-1 ring-vinco">
+                <Avatar nome={nome} indice={i} />
+                <span className="min-w-0 flex-1 truncate text-[17px] font-semibold">{nome}</span>
+                <button
+                  type="button"
+                  onClick={() => removerJogador(nome)}
+                  aria-label={`Remover ${nome}`}
+                  className="flex size-10 items-center justify-center rounded-full text-papel-suave active:bg-envelope-alto"
+                >
+                  <X size={18} strokeWidth={2.5} />
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+        <form onSubmit={adicionarJogador} className="flex gap-2">
+          <label className="sr-only" htmlFor="novo-jogador">
+            Nome do jogador
+          </label>
           <input
+            id="novo-jogador"
             value={novoNome}
             onChange={(e) => setNovoNome(e.target.value)}
             placeholder="Nome do jogador"
             maxLength={16}
             enterKeyHint="done"
             autoCapitalize="words"
-            className="min-h-12 min-w-0 flex-1 rounded-2xl border border-borda bg-superficie px-4 text-lg outline-none placeholder:text-texto-suave/60 focus:border-destaque"
+            autoComplete="off"
+            className="min-h-12 min-w-0 flex-1 rounded-xl bg-envelope px-4 text-[17px] ring-1 ring-vinco outline-none placeholder:text-papel-suave/75 focus:ring-2 focus:ring-selo"
           />
           <button
             type="submit"
             disabled={!podeAdicionar}
-            className="min-h-12 rounded-2xl bg-superficie-alta px-5 text-lg font-extrabold disabled:opacity-40"
+            aria-label="Adicionar jogador"
+            className="flex min-h-12 items-center gap-1.5 rounded-xl bg-envelope-alto px-4 text-[17px] font-bold ring-1 ring-vinco transition-opacity disabled:opacity-35"
           >
+            <Plus size={18} strokeWidth={2.5} />
             Adicionar
           </button>
         </form>
-        {nomeRepetido && nomeNormalizado && <p className="mt-2 text-sm text-perigo">Esse nome já está na lista.</p>}
+        {nomeRepetido && nomeNormalizado && <p className="mt-2 text-sm text-aereo">Esse nome já está na lista.</p>}
       </Secao>
 
       <Secao
-        titulo={`Temas (${config.temaIds.length} de ${TEMAS.length})`}
+        titulo="Temas"
+        contagem={`${config.temaIds.length} de ${TEMAS.length}`}
         acao={
           <button
             type="button"
             onClick={() => atualizar({ temaIds: todosSelecionados ? [] : TEMAS.map((t) => t.id) })}
-            className="text-sm font-bold text-destaque"
+            className="-mr-2 min-h-9 rounded-full px-2 text-[15px] font-semibold text-selo active:bg-envelope"
           >
-            {todosSelecionados ? 'Limpar' : 'Todos'}
+            {todosSelecionados ? 'Limpar' : 'Marcar todos'}
           </button>
         }
       >
-        <div className="grid grid-cols-2 gap-2">
-          {TEMAS.map((tema) => {
-            const ativo = config.temaIds.includes(tema.id)
-            return (
-              <button
-                key={tema.id}
-                type="button"
-                aria-pressed={ativo}
-                onClick={() => alternarTema(tema.id)}
-                className={`flex flex-col items-start gap-1 rounded-2xl border-2 p-3 text-left transition-colors ${ativo ? 'border-destaque bg-destaque/10' : 'border-borda bg-superficie'}`}
-              >
-                <span className="text-3xl">{tema.emoji}</span>
-                <span className="font-extrabold leading-tight">{tema.nome}</span>
-                <span className="text-xs text-texto-suave">{tema.palavras.length} palavras</span>
-              </button>
-            )
-          })}
+        <div className="grid grid-cols-2 gap-2.5">
+          {TEMAS.map((tema) => (
+            <SeloDeTema
+              key={tema.id}
+              nome={tema.nome}
+              total={tema.palavras.length}
+              Icone={ICONES_DOS_TEMAS[tema.id] ?? Globe2}
+              ativo={config.temaIds.includes(tema.id)}
+              aoAlternar={() => alternarTema(tema.id)}
+            />
+          ))}
         </div>
-        <p className="mt-2 text-sm text-texto-suave">Com mais de um tema, a palavra é sorteada entre todos eles.</p>
+        {config.temaIds.length > 1 && (
+          <p className="mt-2.5 text-sm text-papel-suave">A palavra é sorteada entre todos os temas marcados.</p>
+        )}
       </Secao>
 
-      <Secao titulo="Dificuldade das palavras">
+      <Secao titulo="Palavras">
         <Alternador
+          rotulo="Dificuldade das palavras"
           opcoes={[
             { valor: 'facil', rotulo: 'Fáceis' },
             { valor: 'medio', rotulo: 'Até médias' },
@@ -165,33 +204,53 @@ export const NovoJogo = ({ configInicial, aoComecar, aoVoltar }: NovoJogoProps) 
         />
       </Secao>
 
-      <Secao titulo="Rodadas de dicas">
-        <div className="flex items-center justify-between rounded-2xl bg-superficie p-2">
-          <BotaoPasso rotulo="Menos rodadas" disabled={config.rodadas <= MIN_RODADAS} onClick={() => atualizar({ rodadas: config.rodadas - 1 })}>
-            −
-          </BotaoPasso>
-          <span className="text-2xl font-black tabular-nums">{config.rodadas}</span>
-          <BotaoPasso rotulo="Mais rodadas" disabled={config.rodadas >= MAX_RODADAS} onClick={() => atualizar({ rodadas: config.rodadas + 1 })}>
-            +
-          </BotaoPasso>
+      <Secao titulo="Dicas">
+        <div className="flex flex-col gap-2.5">
+          <Contador
+            rotulo="Rodadas"
+            valor={config.rodadas}
+            minimo={MIN_RODADAS}
+            maximo={MAX_RODADAS}
+            aoMudar={(rodadas) => atualizar({ rodadas })}
+          />
+          <Alternador
+            rotulo="Tempo por dica"
+            opcoes={TEMPOS_DICA.map((s) => ({ valor: String(s), rotulo: s === 0 ? 'Livre' : `${s}s` }))}
+            valor={String(config.tempoDica)}
+            aoMudar={(valor) => atualizar({ tempoDica: Number(valor) })}
+          />
         </div>
       </Secao>
 
       {!ehDupla && (
         <>
-          <Secao titulo="Dica para o impostor">
-            <Alternador
-              opcoes={[
-                { valor: 'tema', rotulo: 'Ver o tema' },
-                { valor: 'nenhuma', rotulo: 'Nenhuma' },
-              ]}
-              valor={config.dicaImpostor}
-              aoMudar={(dicaImpostor) => atualizar({ dicaImpostor })}
-            />
+          <Secao titulo="Impostores">
+            <div className="flex flex-col gap-2.5">
+              <Contador
+                rotulo="Quantos"
+                valor={impostores}
+                minimo={1}
+                maximo={limiteImpostores}
+                aoMudar={(n) => atualizar({ impostores: n })}
+                nota={limiteImpostores === 1 ? 'Com 5 ou mais jogadores dá para ter 2.' : undefined}
+              />
+              <Alternador
+                rotulo="O que o impostor recebe"
+                opcoes={[
+                  { valor: 'tema', rotulo: 'O tema' },
+                  { valor: 'nenhuma', rotulo: 'Nada' },
+                  { valor: 'disfarcado', rotulo: 'Disfarce' },
+                ]}
+                valor={config.dicaImpostor}
+                aoMudar={(dicaImpostor) => atualizar({ dicaImpostor })}
+              />
+              <p className="text-sm text-papel-suave">{EXPLICACAO_DA_DICA[config.dicaImpostor]}</p>
+            </div>
           </Secao>
 
           <Secao titulo="Votação">
             <Alternador
+              rotulo="Como votar"
               opcoes={[
                 { valor: 'secreta', rotulo: 'Secreta' },
                 { valor: 'grupo', rotulo: 'Em grupo' },
@@ -199,7 +258,7 @@ export const NovoJogo = ({ configInicial, aoComecar, aoVoltar }: NovoJogoProps) 
               valor={config.modoVotacao}
               aoMudar={(modoVotacao) => atualizar({ modoVotacao })}
             />
-            <p className="mt-2 text-sm text-texto-suave">
+            <p className="mt-2.5 text-sm text-papel-suave">
               {config.modoVotacao === 'secreta'
                 ? 'Cada um vota escondido, passando o celular.'
                 : 'Vocês conversam e escolhem juntos um suspeito.'}
@@ -211,16 +270,93 @@ export const NovoJogo = ({ configInicial, aoComecar, aoVoltar }: NovoJogoProps) 
   )
 }
 
-type SecaoProps = { titulo: string; acao?: ReactNode; children: ReactNode }
+const EXPLICACAO_DA_DICA: Record<Configuracao['dicaImpostor'], string> = {
+  tema: 'O impostor sabe o tema da palavra.',
+  nenhuma: 'O impostor não recebe nada. Mais difícil para ele.',
+  disfarcado: 'O impostor recebe uma palavra parecida e nem sabe que é o impostor.',
+}
 
-const Secao = ({ titulo, acao, children }: SecaoProps) => (
-  <section className="mb-6">
-    <div className="mb-2 flex items-center justify-between">
-      <h2 className="text-sm font-extrabold tracking-wider text-texto-suave uppercase">{titulo}</h2>
-      {acao}
+type SecaoProps = { titulo: string; contagem?: string; acao?: ReactNode; children: ReactNode }
+
+const Secao = ({ titulo, contagem, acao, children }: SecaoProps) => (
+  <section className="mb-8">
+    <div className="mb-3 flex min-h-9 items-center gap-2">
+      <h2 className="text-[19px] font-extrabold tracking-[-0.015em]">{titulo}</h2>
+      {contagem && <span className="text-[15px] font-semibold text-papel-suave tabular-nums">{contagem}</span>}
+      {acao && <span className="ml-auto">{acao}</span>}
     </div>
     {children}
   </section>
+)
+
+type CartaoDeModoProps = { ativo: boolean; titulo: string; descricao: string; aoEscolher: () => void }
+
+const CartaoDeModo = ({ ativo, titulo, descricao, aoEscolher }: CartaoDeModoProps) => (
+  <button
+    type="button"
+    aria-pressed={ativo}
+    onClick={aoEscolher}
+    className={`flex flex-col items-start rounded-2xl p-3.5 text-left transition-[background-color,box-shadow] duration-150 ${
+      ativo ? 'bg-selo text-tinta shadow-selo' : 'bg-envelope ring-1 ring-vinco'
+    }`}
+  >
+    <span className="text-[19px] font-extrabold">{titulo}</span>
+    <span className={`mt-1 text-sm leading-snug ${ativo ? 'text-tinta/80' : 'text-papel-suave'}`}>{descricao}</span>
+  </button>
+)
+
+type SeloDeTemaProps = { nome: string; total: number; Icone: LucideIcon; ativo: boolean; aoAlternar: () => void }
+
+/** Cada tema é um selo picotado: amarelo quando entra no sorteio. */
+const SeloDeTema = ({ nome, total, Icone, ativo, aoAlternar }: SeloDeTemaProps) => (
+  <button
+    type="button"
+    aria-pressed={ativo}
+    onClick={aoAlternar}
+    className={`picote relative flex min-h-[7.5rem] flex-col items-start p-2 text-left transition-colors duration-150 ${
+      ativo ? 'bg-selo text-tinta' : 'bg-envelope-alto text-papel'
+    }`}
+  >
+    <span className={`flex h-full w-full flex-col rounded-md p-2.5 ring-1 ${ativo ? 'ring-tinta/25' : 'ring-vinco'}`}>
+      <span className="flex items-start justify-between">
+        <Icone size={26} strokeWidth={2} />
+        <span
+          className={`flex size-6 items-center justify-center rounded-full ${ativo ? 'bg-tinta text-selo' : 'ring-1 ring-vinco'}`}
+        >
+          {ativo && <Check size={15} strokeWidth={3} />}
+        </span>
+      </span>
+      <span className="mt-auto pt-3 text-[16px] leading-tight font-bold">{nome}</span>
+      <span className={`text-[13px] tabular-nums ${ativo ? 'text-tinta/75' : 'text-papel-suave'}`}>{total} palavras</span>
+    </span>
+  </button>
+)
+
+type ContadorProps = {
+  rotulo: string
+  valor: number
+  minimo: number
+  maximo: number
+  aoMudar: (valor: number) => void
+  nota?: string
+}
+
+const Contador = ({ rotulo, valor, minimo, maximo, aoMudar, nota }: ContadorProps) => (
+  <div className="rounded-2xl bg-envelope p-2 pl-4 ring-1 ring-vinco">
+    <div className="flex items-center gap-3">
+      <span className="flex-1 text-[17px] font-semibold">{rotulo}</span>
+      <BotaoPasso rotulo={`Menos: ${rotulo}`} disabled={valor <= minimo} onClick={() => aoMudar(valor - 1)}>
+        <Minus size={20} strokeWidth={2.75} />
+      </BotaoPasso>
+      <span className="w-6 text-center text-2xl font-extrabold tabular-nums" aria-live="polite">
+        {valor}
+      </span>
+      <BotaoPasso rotulo={`Mais: ${rotulo}`} disabled={valor >= maximo} onClick={() => aoMudar(valor + 1)}>
+        <Plus size={20} strokeWidth={2.75} />
+      </BotaoPasso>
+    </div>
+    {nota && <p className="mt-1 pb-1 text-sm text-papel-suave">{nota}</p>}
+  </div>
 )
 
 type BotaoPassoProps = { rotulo: string; disabled: boolean; onClick: () => void; children: ReactNode }
@@ -231,30 +367,37 @@ const BotaoPasso = ({ rotulo, disabled, onClick, children }: BotaoPassoProps) =>
     aria-label={rotulo}
     disabled={disabled}
     onClick={onClick}
-    className="flex size-12 items-center justify-center rounded-xl bg-superficie-alta text-2xl font-black active:scale-95 disabled:opacity-30"
+    className="flex size-11 items-center justify-center rounded-xl bg-envelope-alto ring-1 ring-vinco transition-[transform,opacity] active:scale-95 disabled:opacity-30"
   >
     {children}
   </button>
 )
 
 type AlternadorProps<T extends string> = {
+  rotulo: string
   opcoes: readonly { valor: T; rotulo: string }[]
   valor: T
   aoMudar: (valor: T) => void
 }
 
-const Alternador = <T extends string>({ opcoes, valor, aoMudar }: AlternadorProps<T>) => (
-  <div className="grid grid-flow-col gap-1 rounded-2xl bg-superficie p-1">
-    {opcoes.map((opcao) => (
-      <button
-        key={opcao.valor}
-        type="button"
-        aria-pressed={opcao.valor === valor}
-        onClick={() => aoMudar(opcao.valor)}
-        className={`min-h-11 rounded-xl font-extrabold transition-colors ${opcao.valor === valor ? 'bg-destaque text-fundo' : 'text-texto-suave'}`}
-      >
-        {opcao.rotulo}
-      </button>
-    ))}
+const Alternador = <T extends string>({ rotulo, opcoes, valor, aoMudar }: AlternadorProps<T>) => (
+  <div role="radiogroup" aria-label={rotulo} className="grid grid-flow-col gap-1 rounded-2xl bg-envelope p-1 ring-1 ring-vinco">
+    {opcoes.map((opcao) => {
+      const ativo = opcao.valor === valor
+      return (
+        <button
+          key={opcao.valor}
+          type="button"
+          role="radio"
+          aria-checked={ativo}
+          onClick={() => aoMudar(opcao.valor)}
+          className={`min-h-11 rounded-xl px-1 text-[15px] font-bold transition-colors duration-150 ${
+            ativo ? 'bg-selo text-tinta' : 'text-papel-suave'
+          }`}
+        >
+          {opcao.rotulo}
+        </button>
+      )
+    })}
   </div>
 )

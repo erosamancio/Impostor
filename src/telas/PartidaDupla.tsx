@@ -1,7 +1,10 @@
-import { useState } from 'react'
+import { Check, Equal, EqualNot, X } from 'lucide-react'
+import { useState, type ReactNode } from 'react'
 import { Avatar } from '../componentes/Avatar'
 import { Botao } from '../componentes/Botao'
+import { Carimbo } from '../componentes/Carimbo'
 import { CartaoSecreto, PalavraSecreta } from '../componentes/CartaoSecreto'
+import { Cronometro } from '../componentes/Cronometro'
 import { PassarCelular } from '../componentes/PassarCelular'
 import { Tela } from '../componentes/Tela'
 import type { Placar } from '../jogo/armazenamento'
@@ -16,23 +19,32 @@ import {
   type Jogador,
   type PartidaDupla,
 } from '../jogo/dupla'
+import { VezDe } from './Dicas'
 
 type TelaDaDuplaProps = {
   partida: PartidaDupla
   placar: Placar
+  /** Segundos por dica; 0 = sem timer. */
+  tempoDica: number
   aoAvancar: (acao: AcaoDupla) => void
   aoJogarDeNovo: () => void
   aoSair: () => void
 }
 
-export const TelaDaDupla = ({ partida, placar, aoAvancar, aoJogarDeNovo, aoSair }: TelaDaDuplaProps) => {
+export const TelaDaDupla = ({ partida, placar, tempoDica, aoAvancar, aoJogarDeNovo, aoSair }: TelaDaDuplaProps) => {
   switch (partida.etapa) {
     case 'revelacao':
       return <RevelacaoDupla partida={partida} aoConcluir={() => aoAvancar({ tipo: 'proximaRevelacao' })} />
     case 'dicas':
-      return <DicasDupla partida={partida} aoAvancar={() => aoAvancar({ tipo: 'proximaVez' })} />
+      return <DicasDupla partida={partida} tempoDica={tempoDica} aoAvancar={() => aoAvancar({ tipo: 'proximaVez' })} />
     case 'votacao':
-      return <ApostaDupla key={partida.votanteAtual} partida={partida} aoApostar={(aposta) => aoAvancar({ tipo: 'apostar', aposta })} />
+      return (
+        <ApostaDupla
+          key={partida.votanteAtual}
+          partida={partida}
+          aoApostar={(aposta) => aoAvancar({ tipo: 'apostar', aposta })}
+        />
+      )
     case 'chute':
       return (
         <ChuteDupla
@@ -49,42 +61,44 @@ export const TelaDaDupla = ({ partida, placar, aoAvancar, aoJogarDeNovo, aoSair 
 const RevelacaoDupla = ({ partida, aoConcluir }: { partida: PartidaDupla; aoConcluir: () => void }) => {
   const jogador = partida.revelacaoAtual
   const nome = partida.jogadores[jogador]
+  const etapa = `${jogador + 1} de 2`
   return (
-    <PassarCelular
-      key={jogador}
-      nome={nome}
-      indice={jogador}
-      progresso={`Jogador ${jogador + 1} de 2`}
-      aviso="Só você pode ver a sua palavra."
-    >
-      <CartaoSecreto nome={nome} aoConcluir={aoConcluir}>
-        <PalavraSecreta palavra={partida.palavras[jogador]} temaNome={partida.temaNome} />
-        <span className="mt-2 text-sm text-texto-suave">A palavra do outro pode ser igual ou só parecida.</span>
+    <PassarCelular key={jogador} nome={nome} indice={jogador} etapa={etapa} aviso="Só você pode ver a sua palavra.">
+      <CartaoSecreto nome={nome} etapa={etapa} aoConcluir={aoConcluir}>
+        <PalavraSecreta
+          palavra={partida.palavras[jogador]}
+          temaNome={partida.temaNome}
+          nota="A palavra do outro pode ser igual ou só parecida."
+        />
       </CartaoSecreto>
     </PassarCelular>
   )
 }
 
-const DicasDupla = ({ partida, aoAvancar }: { partida: PartidaDupla; aoAvancar: () => void }) => {
+type DicasDuplaProps = { partida: PartidaDupla; tempoDica: number; aoAvancar: () => void }
+
+const DicasDupla = ({ partida, tempoDica, aoAvancar }: DicasDuplaProps) => {
   const falando = jogadorDaVez(partida)
-  const nome = partida.jogadores[falando]
   const ultimaVez = partida.vezAtual === 1 && partida.rodadaAtual === partida.totalRodadas
+  const chave = `${partida.rodadaAtual}-${partida.vezAtual}`
 
   return (
     <Tela
-      subtitulo={`Rodada ${partida.rodadaAtual} de ${partida.totalRodadas}`}
+      etapa={`Rodada ${partida.rodadaAtual} de ${partida.totalRodadas}`}
       rodape={<Botao onClick={aoAvancar}>{ultimaVez ? 'Hora de apostar' : 'Próximo'}</Botao>}
     >
-      <div
-        key={`${partida.rodadaAtual}-${partida.vezAtual}`}
-        className="animar-entrada flex flex-1 flex-col items-center justify-center gap-3 text-center"
-      >
-        <Avatar nome={nome} indice={falando} tamanho="grande" />
-        <p className="text-texto-suave">Vez de</p>
-        <p className="text-5xl font-black break-words">{nome}</p>
-        <p className="max-w-72 text-texto-suave">
-          Dê uma dica sobre a sua palavra. Clara demais entrega tudo; vaga demais levanta suspeita.
-        </p>
+      <div className="flex flex-1 flex-col justify-center">
+        <VezDe
+          key={chave}
+          nome={partida.jogadores[falando]}
+          indice={falando}
+          texto="Dê uma dica sobre a sua palavra. Clara demais entrega tudo; vaga demais levanta suspeita."
+        />
+        {tempoDica > 0 && (
+          <div className="mt-8">
+            <Cronometro key={chave} segundos={tempoDica} />
+          </div>
+        )}
       </div>
     </Tela>
   )
@@ -93,13 +107,15 @@ const DicasDupla = ({ partida, aoAvancar }: { partida: PartidaDupla; aoAvancar: 
 const ApostaDupla = ({ partida, aoApostar }: { partida: PartidaDupla; aoApostar: (aposta: Aposta) => void }) => {
   const votante = partida.votanteAtual
   const nome = partida.jogadores[votante]
+  const etapa = `Aposta ${votante + 1} de 2`
   const [aposta, setAposta] = useState<Aposta | null>(null)
 
   return (
-    <PassarCelular nome={nome} indice={votante} progresso={`Aposta ${votante + 1} de 2`} aviso="A aposta é secreta.">
+    <PassarCelular nome={nome} indice={votante} etapa={etapa} aviso="A aposta é secreta.">
       <Tela
         titulo={`Sua aposta, ${nome}`}
         subtitulo={`A palavra de ${partida.jogadores[outro(votante)]} é igual à sua?`}
+        etapa={etapa}
         rodape={
           <Botao disabled={aposta === null} onClick={() => aposta && aoApostar(aposta)}>
             Confirmar aposta
@@ -107,28 +123,36 @@ const ApostaDupla = ({ partida, aoApostar }: { partida: PartidaDupla; aoApostar:
         }
       >
         <div className="grid flex-1 grid-cols-1 content-center gap-3">
-          <OpcaoDeAposta emoji="🤝" rotulo="Iguais" ativa={aposta === 'iguais'} aoEscolher={() => setAposta('iguais')} />
-          <OpcaoDeAposta emoji="🔀" rotulo="Diferentes" ativa={aposta === 'diferentes'} aoEscolher={() => setAposta('diferentes')} />
+          <OpcaoDeAposta
+            icone={<Equal size={36} strokeWidth={2.5} />}
+            rotulo="Iguais"
+            ativa={aposta === 'iguais'}
+            aoEscolher={() => setAposta('iguais')}
+          />
+          <OpcaoDeAposta
+            icone={<EqualNot size={36} strokeWidth={2.5} />}
+            rotulo="Diferentes"
+            ativa={aposta === 'diferentes'}
+            aoEscolher={() => setAposta('diferentes')}
+          />
         </div>
       </Tela>
     </PassarCelular>
   )
 }
 
-type OpcaoDeApostaProps = { emoji: string; rotulo: string; ativa: boolean; aoEscolher: () => void }
+type OpcaoDeApostaProps = { icone: ReactNode; rotulo: string; ativa: boolean; aoEscolher: () => void }
 
-const OpcaoDeAposta = ({ emoji, rotulo, ativa, aoEscolher }: OpcaoDeApostaProps) => (
+const OpcaoDeAposta = ({ icone, rotulo, ativa, aoEscolher }: OpcaoDeApostaProps) => (
   <button
     type="button"
     aria-pressed={ativa}
     onClick={aoEscolher}
-    className={`flex min-h-28 flex-col items-center justify-center gap-1 rounded-3xl border-2 text-2xl font-black transition-colors ${
-      ativa ? 'border-destaque bg-destaque/10' : 'border-borda bg-superficie'
+    className={`flex min-h-32 flex-col items-center justify-center gap-2 rounded-[22px] text-[26px] font-extrabold tracking-[-0.02em] ring-inset transition-[background-color,box-shadow,color] duration-150 ${
+      ativa ? 'bg-selo/12 text-selo ring-2 ring-selo' : 'bg-envelope text-papel ring-1 ring-vinco'
     }`}
   >
-    <span className="text-4xl" aria-hidden>
-      {emoji}
-    </span>
+    <span aria-hidden>{icone}</span>
     {rotulo}
   </button>
 )
@@ -143,30 +167,35 @@ const ChuteDupla = ({ partida, aoRegistrar }: { partida: PartidaDupla; aoRegistr
 
   return (
     <Tela
+      etapa="Chute"
       rodape={
         revelada ? (
-          <div className="grid grid-cols-2 gap-3">
-            <Botao onClick={() => aoRegistrar(true)}>Acertou</Botao>
+          <div className="grid grid-cols-2 gap-2.5">
+            <Botao variante="sucesso" onClick={() => aoRegistrar(true)}>
+              Acertou
+            </Botao>
             <Botao variante="secundario" onClick={() => aoRegistrar(false)}>
               Errou
             </Botao>
           </div>
         ) : (
-          <Botao onClick={() => setRevelada(true)}>Já chutou, revelar</Botao>
+          <Botao onClick={() => setRevelada(true)}>Já chutou, mostrar a palavra</Botao>
         )
       }
     >
-      <div className="flex flex-1 flex-col items-center justify-center gap-4 text-center">
+      <div className="flex flex-1 flex-col justify-center">
         <Avatar nome={nome} indice={quemChuta} tamanho="grande" />
-        <p className="text-3xl font-black">Eram diferentes mesmo!</p>
+        <h1 className="mt-6 text-[40px] leading-[0.98] font-extrabold tracking-[-0.04em]">Eram diferentes mesmo!</h1>
         {revelada ? (
-          <div className="animar-entrada mt-2 flex flex-col items-center gap-1">
-            <p className="text-texto-suave">A palavra de {nomeAlvo} era</p>
-            <p className="text-5xl font-black break-words text-destaque">{partida.palavras[alvo]}</p>
-            <p className="mt-3 text-texto-suave">O chute de {nome} estava certo?</p>
+          <div className="animar-entrada mt-8 rounded-[22px] bg-envelope p-6 ring-1 ring-vinco">
+            <p className="text-[15px] font-semibold text-papel-suave">A palavra de {nomeAlvo} era</p>
+            <p className="mt-1 text-[40px] leading-[1.05] font-extrabold tracking-[-0.03em] break-words text-selo">
+              {partida.palavras[alvo]}
+            </p>
+            <p className="mt-4 text-[17px]">O chute de {nome} estava certo?</p>
           </div>
         ) : (
-          <p className="max-w-72 text-lg text-texto-suave">
+          <p className="mt-4 max-w-80 text-lg leading-snug text-papel-suave">
             {nome}, diga em voz alta qual você acha que é a palavra de {nomeAlvo}. Acertar vale mais 1 ponto.
           </p>
         )}
@@ -198,31 +227,34 @@ const ResultadoDupla = ({ partida, placar, aoJogarDeNovo, aoSair }: ResultadoDup
         </>
       }
     >
-      <div className="rounded-3xl bg-superficie p-6 text-center">
-        <p className="text-5xl" aria-hidden>
-          {iguais ? '🤝' : '🔀'}
-        </p>
-        <h1 className="mt-2 text-3xl font-black">{iguais ? 'As palavras eram iguais' : 'As palavras eram diferentes'}</h1>
-      </div>
+      <section className="flex flex-col items-center pt-4 text-center">
+        <Carimbo linhas={['PALAVRAS', iguais ? 'IGUAIS' : 'DIFERENTES']} cor={iguais ? 'postal' : 'aereo'} />
+        <h1 className="mt-6 text-[34px] leading-none font-extrabold tracking-[-0.035em]">
+          {iguais ? 'Eram a mesma palavra' : 'Eram palavras diferentes'}
+        </h1>
+      </section>
 
-      <ul className="mt-4 flex flex-col gap-2">
+      <ul className="mt-7 flex flex-col gap-2">
         {jogadores.map((j) => {
           const nome = partida.jogadores[j]
-          const acertouAposta = apostaCerta(partida, j)
           const chute = partida.chutes[j]
           return (
-            <li key={nome} className="rounded-2xl bg-superficie p-4">
+            <li key={nome} className="rounded-2xl bg-envelope p-4 ring-1 ring-vinco">
               <div className="flex items-center gap-3">
                 <Avatar nome={nome} indice={j} />
-                <span className="flex-1 truncate text-lg font-bold">{nome}</span>
-                <span className={`text-sm font-bold ${pontos[j] > 0 ? 'text-sucesso' : 'text-texto-suave/50'}`}>+{pontos[j]}</span>
-                <span className="w-8 text-right text-xl font-black tabular-nums">{placar[nome] ?? 0}</span>
+                <span className="min-w-0 flex-1 truncate text-[17px] font-semibold">{nome}</span>
+                <span className={`text-[15px] font-bold tabular-nums ${pontos[j] > 0 ? 'text-postal' : 'text-papel-suave/50'}`}>
+                  +{pontos[j]}
+                </span>
+                <span className="w-9 text-right text-[22px] font-extrabold tabular-nums">{placar[nome] ?? 0}</span>
               </div>
-              <p className="mt-2 text-2xl font-black break-words text-destaque">{partida.palavras[j]}</p>
-              <p className="mt-1 text-sm text-texto-suave">
-                Apostou “{partida.apostas[j]}” {acertouAposta ? '✓' : '✗'}
-                {chute !== null && ` · chute ${chute ? 'certo ✓' : 'errado ✗'}`}
+              <p className="mt-3 text-[28px] leading-tight font-extrabold tracking-[-0.025em] break-words text-selo">
+                {partida.palavras[j]}
               </p>
+              <ul className="mt-2 flex flex-wrap gap-1.5 text-[13px] font-semibold">
+                <Marca certo={apostaCerta(partida, j)}>Apostou “{partida.apostas[j]}”</Marca>
+                {chute !== null && <Marca certo={chute}>Chute {chute ? 'certo' : 'errado'}</Marca>}
+              </ul>
             </li>
           )
         })}
@@ -230,3 +262,12 @@ const ResultadoDupla = ({ partida, placar, aoJogarDeNovo, aoSair }: ResultadoDup
     </Tela>
   )
 }
+
+const Marca = ({ certo, children }: { certo: boolean; children: ReactNode }) => (
+  <li
+    className={`flex items-center gap-1 rounded-full px-2.5 py-1 ${certo ? 'bg-postal/15 text-postal' : 'bg-aereo/15 text-aereo'}`}
+  >
+    {certo ? <Check size={14} strokeWidth={3} aria-hidden /> : <X size={14} strokeWidth={3} aria-hidden />}
+    {children}
+  </li>
+)

@@ -1,0 +1,167 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-03T14:12:47.098155Z",
+  "title": "Design System: Impostor",
+  "extensions": {
+    "colorMeta": {
+      "tinta": {
+        "role": "neutral",
+        "displayName": "Tinta"
+      },
+      "envelope": {
+        "role": "surface",
+        "displayName": "Envelope"
+      },
+      "papel": {
+        "role": "text",
+        "displayName": "Papel"
+      },
+      "selo": {
+        "role": "primary",
+        "displayName": "Selo",
+        "tonalRamp": [
+          "#3d2e00",
+          "#5e4700",
+          "#806100",
+          "#a37c00",
+          "#c99a12",
+          "#ffcd3c",
+          "#ffdd7a",
+          "#fff0c2"
+        ]
+      },
+      "aereo": {
+        "role": "danger",
+        "displayName": "Correio aéreo",
+        "tonalRamp": [
+          "#3d0a04",
+          "#66130a",
+          "#8f1d10",
+          "#c22a19",
+          "#ff5a45",
+          "#ff8473",
+          "#ffb0a6",
+          "#ffdcd7"
+        ]
+      },
+      "postal": {
+        "role": "success",
+        "displayName": "Verde postal",
+        "tonalRamp": [
+          "#0a2b1c",
+          "#114a30",
+          "#196845",
+          "#22875a",
+          "#46c28a",
+          "#74d3a8",
+          "#a5e4c8",
+          "#d5f4e6"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "wordmark": {
+        "displayName": "Wordmark",
+        "purpose": "Nome do jogo na tela inicial."
+      },
+      "segredo": {
+        "displayName": "Segredo",
+        "purpose": "Palavra ou aviso dentro do envelope; mesmo estilo para todos."
+      }
+    },
+    "shadows": [
+      {
+        "name": "carta",
+        "value": "0 10px 24px -10px rgb(4 9 22 / 0.7), 0 2px 6px -2px rgb(4 9 22 / 0.5)",
+        "purpose": "Cartões e botões de cor."
+      },
+      {
+        "name": "selo",
+        "value": "0 8px 18px -8px rgb(201 154 18 / 0.75), 0 2px 4px -1px rgb(4 9 22 / 0.6)",
+        "purpose": "Botão principal amarelo."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-saida",
+        "value": "cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "Entradas, trama e carimbo."
+      },
+      {
+        "name": "surgir",
+        "value": "360ms",
+        "purpose": "Entrada de cada tela."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "coluna",
+        "value": "448px",
+        "purpose": "Largura máxima da coluna do jogo."
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Botão principal",
+      "kind": "button",
+      "refersTo": "button-principal",
+      "description": "Uma ação principal por tela, no rodapé.",
+      "html": "<button class=\"ds-btn\">Começar</button>",
+      "css": ".ds-btn{background:#ffcd3c;color:#0f1a33;min-height:56px;width:100%;border:0;border-radius:14px;font:700 17px 'Bricolage Grotesque Variable',sans-serif;box-shadow:0 8px 18px -8px rgb(201 154 18/.75);transition:transform .15s}.ds-btn:active{transform:scale(.97)}.ds-btn:focus-visible{outline:2px solid #ffcd3c;outline-offset:3px}"
+    },
+    {
+      "name": "Botão secundário",
+      "kind": "button",
+      "refersTo": "button-secundario",
+      "description": "Alternativa ao lado da ação principal.",
+      "html": "<button class=\"ds-btn2\">Mais uma rodada</button>",
+      "css": ".ds-btn2{background:#20325c;color:#eef1f8;min-height:56px;width:100%;border:0;border-radius:14px;box-shadow:inset 0 0 0 1px #31497c;font:700 17px 'Bricolage Grotesque Variable',sans-serif}.ds-btn2:active{transform:scale(.97)}"
+    },
+    {
+      "name": "Botão de acusação",
+      "kind": "button",
+      "refersTo": "button-perigo",
+      "description": "Confirmar voto e acusar.",
+      "html": "<button class=\"ds-btn3\">Confirmar voto</button>",
+      "css": ".ds-btn3{background:#ff5a45;color:#0f1a33;min-height:56px;width:100%;border:0;border-radius:14px;font:700 17px 'Bricolage Grotesque Variable',sans-serif}"
+    },
+    {
+      "name": "Selo de tema",
+      "kind": "chip",
+      "refersTo": "selo-de-tema",
+      "description": "Tema marcado, com borda picotada.",
+      "html": "<div class=\"ds-selo\"><b>Animais</b><small>79 palavras</small></div>",
+      "css": ".ds-selo{display:flex;flex-direction:column;gap:2px;width:150px;padding:16px;background:#ffcd3c;color:#0f1a33;font-family:'Bricolage Grotesque Variable',sans-serif;mask:linear-gradient(#000 0 0) content-box,radial-gradient(circle at center,#0000 3.5px,#000 4px) -6px -6px/12px 12px round}"
+    },
+    {
+      "name": "Envelope secreto",
+      "kind": "card",
+      "description": "O segredo sob a trama de segurança.",
+      "html": "<div class=\"ds-env\"><span>Segure para abrir</span></div>",
+      "css": ".ds-env{width:240px;aspect-ratio:3/4;border-radius:22px;display:flex;align-items:center;justify-content:center;color:#eef1f8;font:700 17px 'Bricolage Grotesque Variable',sans-serif;background-color:#1d2e57;background-image:repeating-linear-gradient(135deg,#2a3f73 0 1.5px,transparent 1.5px 7px);box-shadow:inset 0 0 0 1px #31497c}"
+    }
+  ],
+  "narrative": {
+    "northStar": "Envelope de segurança",
+    "overview": "O celular é um envelope lacrado que passa de mão em mão. O segredo mora sob a trama azul e só aparece enquanto o dedo está nele.",
+    "keyCharacteristics": [
+      "Fundo azul-tinta escuro",
+      "Selo amarelo como única cor de ação",
+      "Correio aéreo para acusação, verde postal para acerto",
+      "Uma família tipográfica, Bricolage Grotesque"
+    ],
+    "rules": [
+      {
+        "name": "Cartão idêntico",
+        "body": "O cartão do impostor tem a mesma aparência que o de quem sabe a palavra.",
+        "section": "colors"
+      }
+    ],
+    "dos": ["Use ícones Lucide", "Um botão principal por tela, no rodapé"],
+    "donts": [
+      "Não use emoji como ícone",
+      "Não diferencie o impostor por cor ou vibração"
+    ]
+  }
+}

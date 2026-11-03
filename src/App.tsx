@@ -16,6 +16,7 @@ import { avancarPartida, calcularPontos, criarPartida, type Acao } from './jogo/
 import type { Configuracao, Partida } from './jogo/tipos'
 import { TEMAS, buscarTema } from './temas'
 import { Dicas } from './telas/Dicas'
+import { ComoJogar } from './telas/ComoJogar'
 import { Discussao } from './telas/Discussao'
 import { Inicio } from './telas/Inicio'
 import { TelaDaDupla } from './telas/PartidaDupla'
@@ -28,6 +29,7 @@ import { Votacao } from './telas/Votacao'
 type Navegacao =
   | { tela: 'inicio' }
   | { tela: 'novoJogo' }
+  | { tela: 'comoJogar' }
   | { tela: 'partida'; partida: Partida }
   | { tela: 'dupla'; partida: PartidaDupla; config: Configuracao }
 
@@ -39,6 +41,8 @@ const CONFIG_PADRAO: Configuracao = {
   rodadas: 2,
   dicaImpostor: 'tema',
   modoVotacao: 'secreta',
+  impostores: 1,
+  tempoDica: 0,
 }
 
 export const App = () => {
@@ -104,9 +108,12 @@ export const App = () => {
           podeRepetir={ultimaConfig !== null}
           aoNovoJogo={() => setNavegacao({ tela: 'novoJogo' })}
           aoRepetir={() => ultimaConfig && comecar(ultimaConfig)}
+          aoComoJogar={() => setNavegacao({ tela: 'comoJogar' })}
           aoZerarPlacar={zerarPlacar}
         />
       )
+    case 'comoJogar':
+      return <ComoJogar aoVoltar={irParaInicio} />
     case 'novoJogo':
       return <NovoJogo configInicial={ultimaConfig ?? CONFIG_PADRAO} aoComecar={comecar} aoVoltar={irParaInicio} />
     case 'partida':
@@ -124,6 +131,7 @@ export const App = () => {
         <TelaDaDupla
           partida={navegacao.partida}
           placar={placar}
+          tempoDica={navegacao.config.tempoDica}
           aoAvancar={(acao) => avancarNaDupla(navegacao.partida, navegacao.config, acao)}
           aoJogarDeNovo={() => comecar(navegacao.config)}
           aoSair={irParaInicio}
@@ -149,6 +157,7 @@ const TelaDaPartida = ({ partida, placar, aoAvancar, aoJogarDeNovo, aoSair }: Te
     case 'discussao':
       return (
         <Discussao
+          impostores={partida.impostores.length}
           aoVotar={() => aoAvancar({ tipo: 'irParaVotacao' })}
           aoPedirRodada={() => aoAvancar({ tipo: 'maisUmaRodada' })}
         />

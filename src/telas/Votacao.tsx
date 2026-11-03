@@ -1,3 +1,4 @@
+import { Crosshair } from 'lucide-react'
 import { useState } from 'react'
 import { Avatar } from '../componentes/Avatar'
 import { Botao } from '../componentes/Botao'
@@ -16,7 +17,7 @@ export const Votacao = ({ partida, aoVotar, aoAcusarEmGrupo }: VotacaoProps) =>
     <VotoSecreto key={partida.votanteAtual} partida={partida} aoVotar={aoVotar} />
   ) : (
     <EscolhaDoSuspeito
-      titulo="Quem é o impostor?"
+      titulo={partida.impostores.length > 1 ? 'Quem é um impostor?' : 'Quem é o impostor?'}
       subtitulo="Decidam juntos e escolham um suspeito."
       jogadores={partida.config.jogadores}
       aoConfirmar={aoAcusarEmGrupo}
@@ -27,17 +28,14 @@ export const Votacao = ({ partida, aoVotar, aoAcusarEmGrupo }: VotacaoProps) =>
 const VotoSecreto = ({ partida, aoVotar }: { partida: Partida; aoVotar: (acusado: number) => void }) => {
   const votante = partida.votanteAtual
   const nome = partida.config.jogadores[votante] ?? ''
+  const etapa = `Voto ${votante + 1} de ${partida.config.jogadores.length}`
 
   return (
-    <PassarCelular
-      nome={nome}
-      indice={votante}
-      progresso={`Voto ${votante + 1} de ${partida.config.jogadores.length}`}
-      aviso="O voto é secreto."
-    >
+    <PassarCelular nome={nome} indice={votante} etapa={etapa} aviso="O voto é secreto.">
       <EscolhaDoSuspeito
         titulo={`Seu voto, ${nome}`}
         subtitulo="Em quem você vota como impostor?"
+        etapa={etapa}
         jogadores={partida.config.jogadores}
         excluido={votante}
         aoConfirmar={aoVotar}
@@ -50,21 +48,35 @@ const VotoSecreto = ({ partida, aoVotar }: { partida: Partida; aoVotar: (acusado
 type EscolhaDoSuspeitoProps = {
   titulo: string
   subtitulo: string
+  etapa?: string
   jogadores: readonly string[]
   excluido?: number
   aoConfirmar: (acusado: number) => void
   rotuloConfirmar: string
 }
 
-const EscolhaDoSuspeito = ({ titulo, subtitulo, jogadores, excluido, aoConfirmar, rotuloConfirmar }: EscolhaDoSuspeitoProps) => {
+const EscolhaDoSuspeito = ({
+  titulo,
+  subtitulo,
+  etapa,
+  jogadores,
+  excluido,
+  aoConfirmar,
+  rotuloConfirmar,
+}: EscolhaDoSuspeitoProps) => {
   const [escolhido, setEscolhido] = useState<number | null>(null)
 
   return (
     <Tela
       titulo={titulo}
       subtitulo={subtitulo}
+      etapa={etapa}
       rodape={
-        <Botao disabled={escolhido === null} onClick={() => escolhido !== null && aoConfirmar(escolhido)}>
+        <Botao
+          variante="perigo"
+          disabled={escolhido === null}
+          onClick={() => escolhido !== null && aoConfirmar(escolhido)}
+        >
           {rotuloConfirmar}
         </Botao>
       }
@@ -77,13 +89,13 @@ const EscolhaDoSuspeito = ({ titulo, subtitulo, jogadores, excluido, aoConfirmar
                 type="button"
                 aria-pressed={escolhido === i}
                 onClick={() => setEscolhido(i)}
-                className={`flex min-h-14 w-full items-center gap-3 rounded-2xl border-2 px-3 text-left text-lg font-bold transition-colors ${
-                  escolhido === i ? 'border-perigo bg-perigo/15' : 'border-transparent bg-superficie'
+                className={`flex min-h-16 w-full items-center gap-3 rounded-2xl px-3 text-left text-[19px] font-bold ring-inset transition-[background-color,box-shadow] duration-150 ${
+                  escolhido === i ? 'bg-aereo/12 ring-2 ring-aereo' : 'bg-envelope ring-1 ring-vinco'
                 }`}
               >
-                <Avatar nome={nome} indice={i} />
-                <span className="flex-1 truncate">{nome}</span>
-                {escolhido === i && <span aria-hidden>👉</span>}
+                <Avatar nome={nome} indice={i} tamanho="medio" />
+                <span className="min-w-0 flex-1 truncate">{nome}</span>
+                {escolhido === i && <Crosshair size={24} strokeWidth={2.25} className="text-aereo" aria-hidden />}
               </button>
             </li>
           ),

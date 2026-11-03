@@ -1,17 +1,30 @@
 @import 'tailwindcss';
 
 @theme {
-  --color-fundo: #14121f;
-  --color-superficie: #1f1c30;
-  --color-superficie-alta: #2a2640;
-  --color-borda: #3a3555;
-  --color-texto: #f3f1ff;
-  --color-texto-suave: #a9a3c7;
-  --color-destaque: #f5c542;
-  --color-destaque-escuro: #c99a1c;
-  --color-perigo: #ff6b6b;
-  --color-sucesso: #4ade80;
-  --font-sans: 'Nunito', ui-rounded, 'SF Pro Rounded', system-ui, sans-serif;
+  /* Interior de envelope de segurança, à noite */
+  --color-tinta: #0f1a33;
+  --color-envelope: #172647;
+  --color-envelope-alto: #20325c;
+  --color-vinco: #31497c;
+  --color-trama: #1d2e57;
+  --color-trama-forte: #2a3f73;
+
+  /* Papel e escrita */
+  --color-papel: #eef1f8;
+  --color-papel-suave: #a7b6d8;
+
+  /* Selo, correio aéreo e carimbo postal */
+  --color-selo: #ffcd3c;
+  --color-selo-escuro: #c99a12;
+  --color-aereo: #ff5a45;
+  --color-postal: #46c28a;
+
+  --font-sans: 'Bricolage Grotesque Variable', ui-sans-serif, system-ui, sans-serif;
+
+  --shadow-carta: 0 10px 24px -10px rgb(4 9 22 / 0.7), 0 2px 6px -2px rgb(4 9 22 / 0.5);
+  --shadow-selo: 0 8px 18px -8px rgb(201 154 18 / 0.75), 0 2px 4px -1px rgb(4 9 22 / 0.6);
+
+  --ease-saida: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @layer base {
@@ -21,35 +34,104 @@
     min-height: 100dvh;
   }
 
+  html {
+    color-scheme: dark;
+    scrollbar-color: var(--color-vinco) transparent;
+  }
+
   body {
-    @apply bg-fundo text-texto font-sans antialiased;
+    @apply bg-tinta font-sans text-papel antialiased;
+    font-optical-sizing: auto;
     -webkit-tap-highlight-color: transparent;
     overscroll-behavior: none;
+  }
+
+  ::selection {
+    background: var(--color-selo);
+    color: var(--color-tinta);
+  }
+
+  input {
+    caret-color: var(--color-selo);
   }
 
   button {
     @apply cursor-pointer;
     touch-action: manipulation;
   }
+
+  :focus-visible {
+    outline: 2px solid var(--color-selo);
+    outline-offset: 3px;
+  }
+
+  h1,
+  h2,
+  p {
+    text-wrap: balance;
+  }
+}
+
+/* Trama de envelope de segurança: hachura fina e a palavra repetida, em dois azuis. */
+.trama {
+  background-color: var(--color-trama);
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='132' height='44' viewBox='0 0 132 44'%3E%3Cg fill='%23324a82' font-family='Arial,sans-serif' font-size='9' font-weight='700' letter-spacing='2'%3E%3Ctext x='4' y='14'%3EIMPOSTOR%3C/text%3E%3Ctext x='70' y='36'%3EIMPOSTOR%3C/text%3E%3C/g%3E%3C/svg%3E"),
+    repeating-linear-gradient(135deg, var(--color-trama-forte) 0 1.5px, transparent 1.5px 7px),
+    repeating-linear-gradient(45deg, rgb(42 63 115 / 0.55) 0 1px, transparent 1px 11px);
+}
+
+/* Borda picotada de selo: meias-luas mordem as bordas; o miolo (content-box) fica inteiro. Pede padding >= 8px. */
+.picote {
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    radial-gradient(circle at center, #0000 3.5px, #000 4px) -6px -6px / 12px 12px round;
 }
 
 @keyframes surgir {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(10px);
+  }
+}
+
+@keyframes carimbar {
+  0% {
+    opacity: 0;
+    transform: rotate(-8deg) scale(1.9);
+    filter: blur(6px);
+  }
+  60% {
+    opacity: 1;
+    transform: rotate(-8deg) scale(0.94);
+    filter: blur(0);
+  }
+  100% {
+    opacity: 1;
+    transform: rotate(-8deg) scale(1);
+  }
+}
+
+@keyframes abrir-trama {
+  from {
+    clip-path: inset(0 0 0 0 round 22px);
   }
   to {
-    opacity: 1;
-    transform: none;
+    clip-path: inset(0 0 100% 0 round 22px);
   }
 }
 
 .animar-entrada {
-  animation: surgir 220ms ease-out both;
+  animation: surgir 360ms var(--ease-saida) both;
+}
+
+.animar-carimbo {
+  animation: carimbar 520ms var(--ease-saida) 180ms both;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .animar-entrada {
+  .animar-entrada,
+  .animar-carimbo {
     animation: none;
   }
 }
