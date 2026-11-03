@@ -2,7 +2,14 @@ import { useState, type FormEvent, type ReactNode } from 'react'
 import { Avatar } from '../componentes/Avatar'
 import { Botao } from '../componentes/Botao'
 import { Tela } from '../componentes/Tela'
-import { MAX_JOGADORES, MAX_RODADAS, MIN_JOGADORES, MIN_RODADAS, type Configuracao } from '../jogo/tipos'
+import {
+  JOGADORES_DUPLA,
+  MAX_JOGADORES,
+  MAX_RODADAS,
+  MIN_JOGADORES,
+  MIN_RODADAS,
+  type Configuracao,
+} from '../jogo/tipos'
 import { TEMAS } from '../temas'
 
 type NovoJogoProps = {
@@ -35,8 +42,12 @@ export const NovoJogo = ({ configInicial, aoComecar, aoVoltar }: NovoJogoProps) 
     atualizar({ temaIds: selecionado ? config.temaIds.filter((t) => t !== id) : [...config.temaIds, id] })
   }
 
-  const faltamJogadores = Math.max(0, MIN_JOGADORES - config.jogadores.length)
-  const podeComecar = faltamJogadores === 0 && config.temaIds.length > 0
+  const ehDupla = config.modo === 'dupla'
+  const minimo = ehDupla ? JOGADORES_DUPLA : MIN_JOGADORES
+  const maximo = ehDupla ? JOGADORES_DUPLA : MAX_JOGADORES
+  const faltamJogadores = Math.max(0, minimo - config.jogadores.length)
+  const sobramJogadores = Math.max(0, config.jogadores.length - maximo)
+  const podeComecar = faltamJogadores === 0 && sobramJogadores === 0 && config.temaIds.length > 0
 
   return (
     <Tela
@@ -46,12 +57,30 @@ export const NovoJogo = ({ configInicial, aoComecar, aoVoltar }: NovoJogoProps) 
         <Botao disabled={!podeComecar} onClick={() => aoComecar(config)}>
           {faltamJogadores > 0
             ? `Adicione mais ${faltamJogadores} ${faltamJogadores === 1 ? 'jogador' : 'jogadores'}`
-            : config.temaIds.length === 0
+            : sobramJogadores > 0
+              ? `Remova ${sobramJogadores} ${sobramJogadores === 1 ? 'jogador' : 'jogadores'}`
+              : config.temaIds.length === 0
               ? 'Escolha um tema'
               : 'Começar'}
         </Botao>
       }
     >
+      <Secao titulo="Modo">
+        <Alternador
+          opcoes={[
+            { valor: 'classico', rotulo: 'Clássico' },
+            { valor: 'dupla', rotulo: 'Dupla' },
+          ]}
+          valor={config.modo}
+          aoMudar={(modo) => atualizar({ modo })}
+        />
+        <p className="mt-2 text-sm text-texto-suave">
+          {ehDupla
+            ? 'Para 2 pessoas. Cada um recebe uma palavra, que pode ser igual ou só parecida com a do outro.'
+            : 'Para 3 ou mais. Todos sabem a palavra, menos o impostor.'}
+        </p>
+      </Secao>
+
       <Secao titulo={`Jogadores (${config.jogadores.length})`}>
         <ul className="flex flex-col gap-2">
           {config.jogadores.map((nome, i) => (
@@ -124,32 +153,36 @@ export const NovoJogo = ({ configInicial, aoComecar, aoVoltar }: NovoJogoProps) 
         </div>
       </Secao>
 
-      <Secao titulo="Dica para o impostor">
-        <Alternador
-          opcoes={[
-            { valor: 'tema', rotulo: 'Ver o tema' },
-            { valor: 'nenhuma', rotulo: 'Nenhuma' },
-          ]}
-          valor={config.dicaImpostor}
-          aoMudar={(dicaImpostor) => atualizar({ dicaImpostor })}
-        />
-      </Secao>
+      {!ehDupla && (
+        <>
+          <Secao titulo="Dica para o impostor">
+            <Alternador
+              opcoes={[
+                { valor: 'tema', rotulo: 'Ver o tema' },
+                { valor: 'nenhuma', rotulo: 'Nenhuma' },
+              ]}
+              valor={config.dicaImpostor}
+              aoMudar={(dicaImpostor) => atualizar({ dicaImpostor })}
+            />
+          </Secao>
 
-      <Secao titulo="Votação">
-        <Alternador
-          opcoes={[
-            { valor: 'secreta', rotulo: 'Secreta' },
-            { valor: 'grupo', rotulo: 'Em grupo' },
-          ]}
-          valor={config.modoVotacao}
-          aoMudar={(modoVotacao) => atualizar({ modoVotacao })}
-        />
-        <p className="mt-2 text-sm text-texto-suave">
-          {config.modoVotacao === 'secreta'
-            ? 'Cada um vota escondido, passando o celular.'
-            : 'Vocês conversam e escolhem juntos um suspeito.'}
-        </p>
-      </Secao>
+          <Secao titulo="Votação">
+            <Alternador
+              opcoes={[
+                { valor: 'secreta', rotulo: 'Secreta' },
+                { valor: 'grupo', rotulo: 'Em grupo' },
+              ]}
+              valor={config.modoVotacao}
+              aoMudar={(modoVotacao) => atualizar({ modoVotacao })}
+            />
+            <p className="mt-2 text-sm text-texto-suave">
+              {config.modoVotacao === 'secreta'
+                ? 'Cada um vota escondido, passando o celular.'
+                : 'Vocês conversam e escolhem juntos um suspeito.'}
+            </p>
+          </Secao>
+        </>
+      )}
     </Tela>
   )
 }

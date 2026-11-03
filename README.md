@@ -17,6 +17,11 @@ npm run build   # versão de produção em dist/
 
 - `src/jogo/` regras da partida (funções puras e testadas), sorteio e armazenamento local
 - `src/temas/` um arquivo por tema com as palavras, a dificuldade e as palavras irmãs
+
+## Modos
+
+- **Clássico** (3 a 20 jogadores): todos recebem a mesma palavra, menos o impostor.
+- **Dupla** (2 jogadores): cada um recebe uma palavra do mesmo tema; metade das vezes são iguais, metade são parecidas. Depois das dicas, cada um aposta "iguais" ou "diferentes". Quem aposta "diferentes" e acerta ainda pode chutar a palavra do outro.
 - `src/telas/` uma tela por etapa da partida
 - `src/componentes/` peças visuais compartilhadas
 
