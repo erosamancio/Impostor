@@ -33,6 +33,7 @@ type Navegacao =
 
 const CONFIG_PADRAO: Configuracao = {
   modo: 'classico',
+  nivel: 'todos',
   jogadores: [],
   temaIds: TEMAS.map((tema) => tema.id),
   rodadas: 2,
@@ -54,7 +55,7 @@ export const App = () => {
 
     const [primeiro, segundo] = config.jogadores
     if (config.modo === 'dupla' && primeiro !== undefined && segundo !== undefined) {
-      const dupla = { jogadores: [primeiro, segundo] as const, rodadas: config.rodadas }
+      const dupla = { jogadores: [primeiro, segundo] as const, rodadas: config.rodadas, nivel: config.nivel }
       const { partida, historico } = criarPartidaDupla(dupla, temas, lerHistorico(), aleatorioSeguro)
       gravarHistorico(historico)
       setNavegacao({ tela: 'dupla', partida, config })

@@ -1,5 +1,6 @@
-import type { Tema } from '../temas'
+import type { Dificuldade, Tema } from '../temas'
 import { embaralhar, sortearIndice, type Aleatorio } from './aleatorio'
+import type { Nivel } from './tipos'
 
 /** Chaves "temaId:palavra" já sorteadas, para evitar repetição. */
 export type Historico = readonly string[]
@@ -10,15 +11,23 @@ export type PalavraSorteada = {
   historico: Historico
 }
 
+const DIFICULDADES_POR_NIVEL: Record<Nivel, readonly Dificuldade[]> = {
+  facil: ['facil'],
+  medio: ['facil', 'media'],
+  todos: ['facil', 'media', 'dificil'],
+}
+
 const chave = (tema: Tema, texto: string) => `${tema.id}:${texto}`
 
 export const sortearPalavra = (
   temas: readonly Tema[],
   historico: Historico,
   aleatorio: Aleatorio,
+  nivel: Nivel = 'todos',
 ): PalavraSorteada => {
+  const permitidas = DIFICULDADES_POR_NIVEL[nivel]
   const candidatas = temas.flatMap((tema) =>
-    tema.palavras.map((p) => ({ tema, palavra: p.texto })),
+    tema.palavras.filter((p) => permitidas.includes(p.dificuldade)).map((p) => ({ tema, palavra: p.texto })),
   )
   if (candidatas.length === 0) throw new Error('Nenhuma palavra nos temas escolhidos')
 

@@ -1,0 +1,66 @@
+import { palavra, type Tema } from './tipos'
+
+export const paises: Tema = {
+  id: 'paises',
+  nome: 'Países',
+  descricao: 'Só os países mais famosos',
+  emoji: '🌍',
+  palavras: [
+    // América
+    palavra('Brasil', 'facil', ['Argentina', 'Portugal']),
+    palavra('Argentina', 'facil', ['Brasil', 'Uruguai', 'Chile']),
+    palavra('Uruguai', 'media', ['Argentina', 'Paraguai']),
+    palavra('Paraguai', 'media', ['Uruguai', 'Bolívia']),
+    palavra('Chile', 'facil', ['Argentina', 'Peru']),
+    palavra('Peru', 'media', ['Bolívia', 'Chile', 'México']),
+    palavra('Bolívia', 'media', ['Peru', 'Paraguai']),
+    palavra('Colômbia', 'media', ['Venezuela', 'México']),
+    palavra('Venezuela', 'media', ['Colômbia', 'Cuba']),
+    palavra('México', 'facil', ['Estados Unidos', 'Espanha', 'Colômbia']),
+    palavra('Estados Unidos', 'facil', ['Canadá', 'Inglaterra', 'México']),
+    palavra('Canadá', 'facil', ['Estados Unidos', 'Rússia']),
+    palavra('Cuba', 'media', ['Jamaica', 'Venezuela']),
+    palavra('Jamaica', 'media', ['Cuba', 'México']),
+
+    // Europa
+    palavra('Portugal', 'facil', ['Espanha', 'Brasil']),
+    palavra('Espanha', 'facil', ['Portugal', 'Itália', 'México']),
+    palavra('França', 'facil', ['Itália', 'Espanha', 'Bélgica']),
+    palavra('Itália', 'facil', ['França', 'Grécia', 'Espanha']),
+    palavra('Alemanha', 'facil', ['Áustria', 'Holanda', 'Suíça']),
+    palavra('Inglaterra', 'facil', ['Irlanda', 'Estados Unidos', 'Escócia']),
+    palavra('Escócia', 'dificil', ['Irlanda', 'Inglaterra']),
+    palavra('Irlanda', 'media', ['Escócia', 'Inglaterra']),
+    palavra('Holanda', 'facil', ['Bélgica', 'Alemanha', 'Dinamarca']),
+    palavra('Bélgica', 'media', ['Holanda', 'Suíça', 'França']),
+    palavra('Suíça', 'facil', ['Áustria', 'Bélgica', 'Alemanha']),
+    palavra('Áustria', 'dificil', ['Suíça', 'Alemanha']),
+    palavra('Grécia', 'facil', ['Itália', 'Turquia', 'Egito']),
+    palavra('Rússia', 'facil', ['China', 'Canadá', 'Noruega']),
+    palavra('Noruega', 'media', ['Suécia', 'Islândia', 'Finlândia']),
+    palavra('Suécia', 'media', ['Noruega', 'Finlândia', 'Dinamarca']),
+    palavra('Finlândia', 'dificil', ['Suécia', 'Noruega']),
+    palavra('Dinamarca', 'dificil', ['Suécia', 'Holanda']),
+    palavra('Islândia', 'dificil', ['Noruega', 'Finlândia']),
+    palavra('Turquia', 'media', ['Grécia', 'Egito', 'Marrocos']),
+
+    // Ásia e Oceania
+    palavra('China', 'facil', ['Japão', 'Coreia do Sul', 'Rússia']),
+    palavra('Japão', 'facil', ['China', 'Coreia do Sul']),
+    palavra('Coreia do Sul', 'media', ['Japão', 'China']),
+    palavra('Índia', 'facil', ['Tailândia', 'China', 'Egito']),
+    palavra('Tailândia', 'media', ['Índia', 'Vietnã']),
+    palavra('Vietnã', 'dificil', ['Tailândia', 'China']),
+    palavra('Israel', 'media', ['Egito', 'Turquia']),
+    palavra('Austrália', 'facil', ['Nova Zelândia', 'Estados Unidos']),
+    palavra('Nova Zelândia', 'media', ['Austrália', 'Islândia']),
+
+    // África
+    palavra('Egito', 'facil', ['Marrocos', 'Grécia', 'Índia']),
+    palavra('Marrocos', 'media', ['Egito', 'Turquia']),
+    palavra('África do Sul', 'media', ['Quênia', 'Austrália']),
+    palavra('Quênia', 'dificil', ['África do Sul', 'Angola']),
+    palavra('Angola', 'media', ['Moçambique', 'Portugal']),
+    palavra('Moçambique', 'dificil', ['Angola', 'África do Sul']),
+  ],
+}

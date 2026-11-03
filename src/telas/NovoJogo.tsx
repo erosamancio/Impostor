@@ -42,6 +42,7 @@ export const NovoJogo = ({ configInicial, aoComecar, aoVoltar }: NovoJogoProps) 
     atualizar({ temaIds: selecionado ? config.temaIds.filter((t) => t !== id) : [...config.temaIds, id] })
   }
 
+  const todosSelecionados = config.temaIds.length === TEMAS.length
   const ehDupla = config.modo === 'dupla'
   const minimo = ehDupla ? JOGADORES_DUPLA : MIN_JOGADORES
   const maximo = ehDupla ? JOGADORES_DUPLA : MAX_JOGADORES
@@ -119,7 +120,18 @@ export const NovoJogo = ({ configInicial, aoComecar, aoVoltar }: NovoJogoProps) 
         {nomeRepetido && nomeNormalizado && <p className="mt-2 text-sm text-perigo">Esse nome já está na lista.</p>}
       </Secao>
 
-      <Secao titulo="Tema">
+      <Secao
+        titulo={`Temas (${config.temaIds.length} de ${TEMAS.length})`}
+        acao={
+          <button
+            type="button"
+            onClick={() => atualizar({ temaIds: todosSelecionados ? [] : TEMAS.map((t) => t.id) })}
+            className="text-sm font-bold text-destaque"
+          >
+            {todosSelecionados ? 'Limpar' : 'Todos'}
+          </button>
+        }
+      >
         <div className="grid grid-cols-2 gap-2">
           {TEMAS.map((tema) => {
             const ativo = config.temaIds.includes(tema.id)
@@ -138,7 +150,19 @@ export const NovoJogo = ({ configInicial, aoComecar, aoVoltar }: NovoJogoProps) 
             )
           })}
         </div>
-        <p className="mt-2 text-sm text-texto-suave">Mais temas chegam nas próximas versões.</p>
+        <p className="mt-2 text-sm text-texto-suave">Com mais de um tema, a palavra é sorteada entre todos eles.</p>
+      </Secao>
+
+      <Secao titulo="Dificuldade das palavras">
+        <Alternador
+          opcoes={[
+            { valor: 'facil', rotulo: 'Fáceis' },
+            { valor: 'medio', rotulo: 'Até médias' },
+            { valor: 'todos', rotulo: 'Todas' },
+          ]}
+          valor={config.nivel}
+          aoMudar={(nivel) => atualizar({ nivel })}
+        />
       </Secao>
 
       <Secao titulo="Rodadas de dicas">
@@ -187,9 +211,14 @@ export const NovoJogo = ({ configInicial, aoComecar, aoVoltar }: NovoJogoProps) 
   )
 }
 
-const Secao = ({ titulo, children }: { titulo: string; children: ReactNode }) => (
+type SecaoProps = { titulo: string; acao?: ReactNode; children: ReactNode }
+
+const Secao = ({ titulo, acao, children }: SecaoProps) => (
   <section className="mb-6">
-    <h2 className="mb-2 text-sm font-extrabold tracking-wider text-texto-suave uppercase">{titulo}</h2>
+    <div className="mb-2 flex items-center justify-between">
+      <h2 className="text-sm font-extrabold tracking-wider text-texto-suave uppercase">{titulo}</h2>
+      {acao}
+    </div>
     {children}
   </section>
 )

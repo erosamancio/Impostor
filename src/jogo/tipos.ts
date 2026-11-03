@@ -1,9 +1,12 @@
 export type ModoJogo = 'classico' | 'dupla'
+/** Dificuldade máxima das palavras sorteadas. */
+export type Nivel = 'facil' | 'medio' | 'todos'
 export type ModoVotacao = 'secreta' | 'grupo'
 export type DicaImpostor = 'tema' | 'nenhuma'
 
 export type Configuracao = {
   modo: ModoJogo
+  nivel: Nivel
   jogadores: readonly string[]
   temaIds: readonly string[]
   rodadas: number

@@ -1,6 +1,7 @@
 import type { Tema } from '../temas'
 import { sortearIndice, type Aleatorio } from './aleatorio'
 import { sortearPalavra, type Historico } from './sorteio'
+import type { Nivel } from './tipos'
 
 /**
  * Modo dupla: duas pessoas recebem palavras do mesmo tema, que podem ser
@@ -35,6 +36,7 @@ export type PartidaDupla = {
 export type ConfigDupla = {
   jogadores: readonly [string, string]
   rodadas: number
+  nivel: Nivel
 }
 
 export type AcaoDupla =
@@ -60,7 +62,7 @@ export const criarPartidaDupla = (
   historico: Historico,
   aleatorio: Aleatorio,
 ): { partida: PartidaDupla; historico: Historico } => {
-  const sorteada = sortearPalavra(temas, historico, aleatorio)
+  const sorteada = sortearPalavra(temas, historico, aleatorio, config.nivel)
   const irmas = sorteada.tema.palavras.find((p) => p.texto === sorteada.palavra)?.irmas ?? []
   const iguais = irmas.length === 0 || aleatorio() < CHANCE_PALAVRAS_IGUAIS
   const segunda = iguais ? sorteada.palavra : (irmas[sortearIndice(irmas.length, aleatorio)] ?? sorteada.palavra)
