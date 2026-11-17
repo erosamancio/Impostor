@@ -1,4 +1,6 @@
 import { animais } from './animais'
+import { brawlStars } from './brawl-stars'
+import { clashRoyale } from './clash-royale'
 import { comidasEBebidas } from './comidas-e-bebidas'
 import { esportes } from './esportes'
 import { lugaresDaCidade } from './lugares-da-cidade'
@@ -17,6 +19,8 @@ export const TEMAS: readonly Tema[] = [
   animais,
   profissoes,
   esportes,
+  clashRoyale,
+  brawlStars,
 ]
 
 export const buscarTema = (id: string): Tema | undefined =>

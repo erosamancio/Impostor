@@ -23,7 +23,7 @@ npm run build   # versão de produção em dist/
 
 ## Temas
 
-Comidas e bebidas, Países, Lugares do Brasil, Lugares da cidade, Animais, Profissões e Esportes. Dá para jogar com um tema ou misturar vários, e filtrar as palavras por dificuldade.
+Comidas e bebidas, Países, Lugares do Brasil, Lugares da cidade, Animais, Profissões, Esportes, Clash Royale (cartas) e Brawl Stars (brawlers). Dá para jogar com um tema ou misturar vários, e filtrar as palavras por dificuldade.
 
 ## Modos
 
