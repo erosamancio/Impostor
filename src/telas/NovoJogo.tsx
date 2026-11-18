@@ -2,11 +2,13 @@ import {
   Briefcase,
   Building2,
   Check,
+  Crown,
   Globe2,
   MapPinned,
   Minus,
   PawPrint,
   Plus,
+  Star,
   Trophy,
   UtensilsCrossed,
   X,
@@ -27,6 +29,8 @@ const ICONES_DOS_TEMAS: Record<string, LucideIcon> = {
   animais: PawPrint,
   profissoes: Briefcase,
   esportes: Trophy,
+  'clash-royale': Crown,
+  'brawl-stars': Star,
 }
 
 type NovoJogoProps = {
